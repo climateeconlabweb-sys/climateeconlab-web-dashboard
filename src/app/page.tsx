@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import FilterBar from '@/components/FilterBar'
 import BoxPlotChart from '@/components/BoxPlotChart'
+import FanChart from '@/components/FanChart'
+import YearSlider from '@/components/YearSlider'
 import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
@@ -17,6 +19,7 @@ const data = dataset as unknown as {
 
 export default function Page() {
   const [filter, setFilter] = useState(DEFAULT_FILTER)
+  const [endYear, setEndYear] = useState(2100)
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
@@ -39,8 +42,9 @@ export default function Page() {
 
       <section className="section" id="damage">
         <h2>기후변화 피해비용</h2>
-        <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 데이터 {damageRows.length}건</p>
-        {/* Task 8: FanChart + YearSlider */}
+        <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 연도 2025~{endYear}</p>
+        <FanChart rows={damageRows} comboCount={comboCount(filter)} endYear={endYear} unitLabel={UNIT_CONFIG.damage.label} />
+        <YearSlider value={endYear} onChange={setEndYear} />
       </section>
 
       <section className="section" id="regional">
