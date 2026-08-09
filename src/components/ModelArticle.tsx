@@ -21,7 +21,6 @@ export default function ModelArticle({ html }: { html: string }) {
   return (
     <div>
       <div className="model-filter" role="group" aria-label="모형 선택">
-        <span className="group-label">모형</span>
         {(['ALL', ...MODELS] as const).map((m) => (
           <button
             key={m}
