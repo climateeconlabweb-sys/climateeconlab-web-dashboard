@@ -91,10 +91,29 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
   const rangeText = (v: number) => (usdMode ? `$${usdText(v)}` : fmtFull(v))
   const pos = aHi > aLo ? Math.min(1, Math.max(0, (aValue - aLo) / (aHi - aLo))) : 0.5
 
+  // 조건이 여럿일 때: 평균 기준 최저·최고 조건 미니 카드로 우측 공간 활용
+  const lowest = rows.reduce((a, b) => (a.mean <= b.mean ? a : b))
+  const highest = rows.reduce((a, b) => (a.mean >= b.mean ? a : b))
+  const mini = (title: string, r: SccRow) => (
+    <div style={{
+      border: '1px solid var(--border)', borderRadius: 12, padding: '14px 16px',
+      flex: '1 1 180px', background: 'var(--bg)',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2,
+    }}>
+      <div style={{ fontSize: 12, color: 'var(--ink-secondary)' }}>{title} · 평균 기준</div>
+      <div style={{ fontSize: 22, fontWeight: 700 }}>
+        {rangeText(r.mean)}
+        <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink-secondary)', marginLeft: 5 }}>{mainUnit}</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--ink-muted)' }}>{r.model} · 기후민감도 {r.ecs}℃ · 할인율 {r.dr}%</div>
+    </div>
+  )
+
   return (
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch', margin: '4px 0 20px' }}>
     <div style={{
       border: '1px solid var(--border)', borderRadius: 12, padding: '18px 20px',
-      margin: '4px 0 20px', maxWidth: 520, background: 'var(--bg)',
+      flex: '2 1 340px', maxWidth: 520, background: 'var(--bg)',
     }}>
       <div style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>탄소의 사회적 비용 (SCC) — {region}</div>
       <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, margin: '2px 0' }}>
@@ -120,6 +139,9 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
       <div style={{ fontSize: 11.5, color: 'var(--ink-muted)' }}>
         적용 환율 {fx.rate.toLocaleString('ko-KR')}원/USD{fx.isFallback ? ' (기준 고정값)' : fx.asOf ? ` (${fx.asOf})` : ''}
       </div>
+    </div>
+    {rows.length > 1 && mini('가장 낮은 조건', lowest)}
+    {rows.length > 1 && mini('가장 높은 조건', highest)}
     </div>
   )
 }

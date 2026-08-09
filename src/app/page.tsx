@@ -8,7 +8,7 @@ import ChoroplethMap from '@/components/ChoroplethMap'
 import MapLegend from '@/components/MapLegend'
 import Histogram from '@/components/Histogram'
 import RegionTable from '@/components/RegionTable'
-import { quantileThresholds } from '@/lib/stats'
+import { niceThresholds } from '@/lib/stats'
 import DownloadMenu from '@/components/DownloadMenu'
 import { excelFileName } from '@/lib/download'
 import { UNIT_CONFIG } from '@/data/config'
@@ -55,7 +55,7 @@ export default function Page() {
   const damageUnit = usd ? UNIT_CONFIG.damage.usdLabel : UNIT_CONFIG.damage.label
 
   const regionalValues = regionalDisplay.filter((r) => r.value !== null).map((r) => r.value as number)
-  const regionalThresholds = quantileThresholds(regionalValues, 7)
+  const regionalThresholds = niceThresholds(regionalValues, 7)
 
   return (
     <main>
@@ -103,7 +103,7 @@ export default function Page() {
         <div className="section-body">
           <ChoroplethMap regional={regionalDisplay} unitLabel={damageUnit} />
           <div className="side-panel">
-            <MapLegend values={regionalValues} thresholds={regionalThresholds} />
+            <MapLegend thresholds={regionalThresholds} />
             <Histogram values={regionalValues} thresholds={regionalThresholds} />
             <RegionTable regional={regionalDisplay} />
           </div>

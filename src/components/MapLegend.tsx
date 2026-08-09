@@ -1,25 +1,25 @@
 'use client'
 import { fmtCompact } from '@/lib/format'
 
-/** 지도 범례 (M-2) — 분위수 7구간 실제 경계값, 우측 패널에 세로 배치 */
-export default function MapLegend({ values, thresholds }: { values: number[]; thresholds: number[] }) {
-  if (values.length === 0) return null
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+/** 지도 범례 (M-2) — 반올림한 구간 경계, "미만/이상" 표기, 우측 패널 세로 배치 */
+export default function MapLegend({ thresholds }: { thresholds: number[] }) {
+  if (thresholds.length === 0) return null
+  const bins = thresholds.length + 1
+  const label = (i: number): string => {
+    if (i === 0) return `${fmtCompact(thresholds[0])} 미만`
+    if (i === bins - 1) return `${fmtCompact(thresholds[thresholds.length - 1])} 이상`
+    return `${fmtCompact(thresholds[i - 1])} ~ ${fmtCompact(thresholds[i])}`
+  }
   return (
     <div>
       <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>범례</div>
       <div className="legend">
-        {Array.from({ length: 7 }, (_, i) => {
-          const lo = i === 0 ? min : thresholds[i - 1]
-          const hi = i === 6 ? max : thresholds[i]
-          return (
-            <div key={i} className="legend-row">
-              <span className="swatch" style={{ background: `var(--map-${i + 1})` }} />
-              <span>{fmtCompact(lo)} ~ {fmtCompact(hi)}</span>
-            </div>
-          )
-        })}
+        {Array.from({ length: bins }, (_, i) => (
+          <div key={i} className="legend-row">
+            <span className="swatch" style={{ background: `var(--map-${i + 1})` }} />
+            <span>{label(i)}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

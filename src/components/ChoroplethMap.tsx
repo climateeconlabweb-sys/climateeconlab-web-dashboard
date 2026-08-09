@@ -4,7 +4,7 @@ import { geoMercator, geoPath } from 'd3-geo'
 import { feature, mesh } from 'topojson-client'
 import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { Feature, Geometry } from 'geojson'
-import { quantileThresholds, binIndex, rankDesc } from '@/lib/stats'
+import { niceThresholds, binIndex, rankDesc } from '@/lib/stats'
 import { fmtFull } from '@/lib/format'
 import type { RegionalRow } from '@/lib/types'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
@@ -43,7 +43,7 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
 
   const byCode = useMemo(() => new Map(regional.map((r) => [r.sigCd, r])), [regional])
   const valued = useMemo(() => regional.filter((r) => r.value !== null) as (RegionalRow & { value: number })[], [regional])
-  const thresholds = useMemo(() => quantileThresholds(valued.map((r) => r.value), 7), [valued])
+  const thresholds = useMemo(() => niceThresholds(valued.map((r) => r.value), 7), [valued])
   const rankByCode = useMemo(() => {
     const ranks = rankDesc(valued.map((r) => r.value))
     return new Map(valued.map((r, i) => [r.sigCd, ranks[i]]))
