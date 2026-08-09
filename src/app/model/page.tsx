@@ -14,6 +14,7 @@ export default async function ModelPage() {
         <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
         <a href="/">데이터 보기</a>
         <a href="/model" className="active">모형 설명</a>
+        <a href="/samples">데이터 샘플 보기</a>
       </nav>
       <section className="section" style={{ maxWidth: 860, margin: '0 auto' }}>
         {html ? (
