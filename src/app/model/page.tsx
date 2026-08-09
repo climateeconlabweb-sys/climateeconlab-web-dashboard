@@ -1,4 +1,5 @@
 import { contentStore } from '@/lib/content'
+import ModelArticle from '@/components/ModelArticle'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export default async function ModelPage() {
       </nav>
       <section className="section" style={{ maxWidth: 860, margin: '0 auto' }}>
         {html ? (
-          <article dangerouslySetInnerHTML={{ __html: html }} />
+          <ModelArticle html={html} />
         ) : (
           <article>
             <h2>한국형 앙상블 기후변화통합평가모형</h2>

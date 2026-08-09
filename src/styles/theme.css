@@ -108,6 +108,13 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); fo
 
 .empty-state { padding: 48px 0; text-align: center; color: var(--ink-muted); font-size: 14px; }
 
+/* 모형 설명 필터 */
+.model-filter { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 20px; }
+@media (max-width: 640px) {
+  .model-filter { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  .model-filter .filter-btn { flex: none; }
+}
+
 /* 모형 설명 본문 서식 */
 article { line-height: 1.75; }
 article h2 { font-size: 19px; margin: 32px 0 10px; }
