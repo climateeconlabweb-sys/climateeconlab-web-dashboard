@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FilterBar from '@/components/FilterBar'
+import SccStatCard, { type FxInfo } from '@/components/SccStatCard'
 import BoxPlotChart from '@/components/BoxPlotChart'
 import FanChart from '@/components/FanChart'
 import ChoroplethMap from '@/components/ChoroplethMap'
@@ -25,6 +26,14 @@ const data = dataset as unknown as {
 export default function Page() {
   const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [startYear, setStartYear] = useState(2025)
+  const [fx, setFx] = useState<FxInfo>({ rate: 1450, asOf: null, isFallback: true })
+
+  useEffect(() => {
+    fetch('/api/fx')
+      .then((r) => r.json())
+      .then((j) => { if (typeof j?.rate === 'number' && j.rate > 0) setFx(j) })
+      .catch(() => {}) // 실패 시 고정값 1,450원 유지
+  }, [])
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
@@ -49,6 +58,7 @@ export default function Page() {
           </div>
           <DownloadMenu svgId="scc-chart" imageName="SCC" excelRows={sccRows} excelName={excelFileName('SCC', filter)} />
         </div>
+        <SccStatCard rows={sccRows} filter={filter} fx={fx} unitLabel={UNIT_CONFIG.scc.label} />
         <BoxPlotChart rows={sccRows} unitLabel={UNIT_CONFIG.scc.label} />
       </section>
 
