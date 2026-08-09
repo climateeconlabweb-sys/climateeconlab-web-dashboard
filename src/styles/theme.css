@@ -6,14 +6,14 @@
   --model-rice: #3ba272;
   --model-witch: #d4a017;
 
-  /* 지도 순차 램프 7단계 (M-2, ColorBrewer Blues) */
-  --map-1: #eff3ff;
-  --map-2: #c6dbef;
-  --map-3: #9ecae1;
-  --map-4: #6baed6;
-  --map-5: #4292c6;
-  --map-6: #2171b5;
-  --map-7: #084594;
+  /* 지도 순차 램프 7단계 (M-2, ColorBrewer YlOrRd) — 피해 크기를 노랑→빨강으로 */
+  --map-1: #ffffb2;
+  --map-2: #fed976;
+  --map-3: #feb24c;
+  --map-4: #fd8d3c;
+  --map-5: #fc4e2a;
+  --map-6: #e31a1c;
+  --map-7: #b10026;
 
   /* 표면·텍스트 */
   --bg: #ffffff;
@@ -32,12 +32,34 @@
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif; }
 
 .top-nav {
+  position: relative;
   display: flex; align-items: center; gap: 24px;
   padding: 14px 24px; border-bottom: 1px solid var(--border);
 }
 .top-nav .brand { font-weight: 700; font-size: 15px; }
 .top-nav a { color: var(--ink-secondary); text-decoration: none; font-size: 14px; padding: 6px 2px; }
 .top-nav a.active { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 24px; }
+.nav-toggle { display: none; }
+@media (max-width: 640px) {
+  .top-nav { gap: 12px; }
+  .top-nav .brand { flex: 1; min-width: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav-toggle {
+    display: flex; align-items: center; flex: none;
+    border: 1px solid var(--border); background: var(--bg); color: var(--ink-secondary);
+    border-radius: var(--radius); padding: 7px 9px; cursor: pointer;
+  }
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(29, 37, 48, 0.12);
+    padding: 6px 16px 10px;
+  }
+  .nav-links.open a { padding: 11px 8px; font-size: 14.5px; }
+  .nav-links.open a.active { border-bottom: none; background: var(--surface); border-radius: 6px; }
+}
 
 .filter-bar {
   position: sticky; top: 0; z-index: 20;
