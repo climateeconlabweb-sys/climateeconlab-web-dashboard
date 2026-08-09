@@ -6,6 +6,7 @@ import { MODELS, YEARS, type DamageRow, type Model } from '@/lib/types'
 import { summarizeByYear, type YearSummary } from '@/lib/stats'
 import { fmtCompact, fmtFull } from '@/lib/format'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
+import YearSlider from './YearSlider'
 
 const MODEL_COLOR: Record<Model, string> = {
   FUND: 'var(--model-fund)',
@@ -17,7 +18,7 @@ const DASHES = ['', '6 3', '2 3', '6 3 2 3']
 
 const W = 920
 const H = 440
-const MARGIN = { top: 16, right: 16, bottom: 36, left: 72 }
+const MARGIN = { top: 34, right: 16, bottom: 36, left: 72 }
 
 const comboKey = (r: DamageRow) => `${r.model}|${r.ecs}|${r.dr}`
 
@@ -34,17 +35,18 @@ interface Combo {
 interface Props {
   rows: DamageRow[]
   comboCount: number
-  endYear: number
+  startYear: number
+  onStartYearChange: (y: number) => void
   unitLabel: string
   svgId?: string
 }
 
 /** 피해비용 팬차트 (D-1~D-6) — 조합 4개 이하 개별 모드, 5개 이상 요약 모드 */
-export default function FanChart({ rows, comboCount, endYear, unitLabel, svgId = 'damage-chart' }: Props) {
+export default function FanChart({ rows, comboCount, startYear, onStartYearChange, unitLabel, svgId = 'damage-chart' }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const [hoverYear, setHoverYear] = useState<number | null>(null)
 
-  const visible = useMemo(() => rows.filter((r) => r.year <= endYear), [rows, endYear])
+  const visible = useMemo(() => rows.filter((r) => r.year >= startYear), [rows, startYear])
   const individual = comboCount <= 4
 
   const combos: Combo[] = useMemo(() => {
@@ -77,13 +79,13 @@ export default function FanChart({ rows, comboCount, endYear, unitLabel, svgId =
   const innerW = W - MARGIN.left - MARGIN.right
   const innerH = H - MARGIN.top - MARGIN.bottom
 
-  // X축 도메인은 2025~2100 고정 (D-3) — 슬라이더로 잘려도 축 유지
-  const x = scaleLinear().domain([2025, 2100]).range([0, innerW])
+  // X축은 선택한 시작 연도~2100 (D-3 변경: 시작 연도 슬라이더)
+  const x = scaleLinear().domain([startYear, 2100]).range([0, innerW])
   const yLo = individual ? Math.min(...visible.map((r) => r.p05)) : Math.min(...summary.map((s) => s.envLo))
   const yHi = individual ? Math.max(...visible.map((r) => r.p95)) : Math.max(...summary.map((s) => s.envHi))
   const y = scaleLinear().domain([yLo, yHi]).nice().range([innerH, 0])
   const yTicks = y.ticks(6)
-  const xTicks = [2025, 2050, 2075, 2100]
+  const xTicks = [...new Set([startYear, ...[2050, 2075, 2100].filter((t) => t > startYear)])]
 
   const envArea = area<YearSummary>().x((d) => x(d.year)).y0((d) => y(d.envLo)).y1((d) => y(d.envHi)).curve(curveMonotoneX)
   const bandArea = area<YearSummary>().x((d) => x(d.year)).y0((d) => y(d.meanMin)).y1((d) => y(d.meanMax)).curve(curveMonotoneX)
@@ -95,7 +97,7 @@ export default function FanChart({ rows, comboCount, endYear, unitLabel, svgId =
     const rect = e.currentTarget.getBoundingClientRect()
     const px = ((e.clientX - rect.left) / rect.width) * innerW
     const rawYear = x.invert(px)
-    const year = Math.min(endYear, Math.max(2025, Math.round(rawYear / 5) * 5))
+    const year = Math.min(2100, Math.max(startYear, Math.round(rawYear / 5) * 5))
     if (!YEARS.includes(year)) return
     setHoverYear(year)
     const lines: string[] = [`${year}년`]
@@ -135,7 +137,8 @@ export default function FanChart({ rows, comboCount, endYear, unitLabel, svgId =
               </text>
             ))}
             {yLo < 0 && <line x1={0} x2={innerW} y1={y(0)} y2={y(0)} stroke="var(--ink-muted)" strokeWidth={1} />}
-            <text x={-MARGIN.left + 6} y={-4} fontSize={11} fill="var(--ink-secondary)">{unitLabel}</text>
+            {/* Y축 단위 — 눈금 숫자와 겹치지 않도록 여백 위에 배치 */}
+            <text x={-MARGIN.left + 6} y={-14} fontSize={11} fill="var(--ink-secondary)">{unitLabel}</text>
 
             {individual ? (
               combos.map((c) => (
@@ -167,6 +170,8 @@ export default function FanChart({ rows, comboCount, endYear, unitLabel, svgId =
             <line x1={0} x2={innerW} y1={innerH} y2={innerH} stroke="var(--border)" />
           </g>
         </svg>
+        {/* 슬라이더는 차트와 같은 폭 (차트 컬럼 내부) */}
+        <YearSlider value={startYear} onChange={onStartYearChange} />
       </div>
 
       {/* 오른쪽 범례 (D-5) */}

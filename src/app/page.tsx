@@ -3,7 +3,6 @@ import { useState } from 'react'
 import FilterBar from '@/components/FilterBar'
 import BoxPlotChart from '@/components/BoxPlotChart'
 import FanChart from '@/components/FanChart'
-import YearSlider from '@/components/YearSlider'
 import ChoroplethMap from '@/components/ChoroplethMap'
 import Histogram from '@/components/Histogram'
 import RegionTable from '@/components/RegionTable'
@@ -25,7 +24,7 @@ const data = dataset as unknown as {
 
 export default function Page() {
   const [filter, setFilter] = useState(DEFAULT_FILTER)
-  const [endYear, setEndYear] = useState(2100)
+  const [startYear, setStartYear] = useState(2025)
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
@@ -57,12 +56,11 @@ export default function Page() {
         <div className="section-head">
           <div>
             <h2>기후변화 피해비용</h2>
-            <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 연도 2025~{endYear}</p>
+            <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 연도 {startYear}~2100</p>
           </div>
           <DownloadMenu svgId="damage-chart" imageName="피해비용" excelRows={damageRows} excelName={excelFileName('Damage', filter)} />
         </div>
-        <FanChart rows={damageRows} comboCount={comboCount(filter)} endYear={endYear} unitLabel={UNIT_CONFIG.damage.label} />
-        <YearSlider value={endYear} onChange={setEndYear} />
+        <FanChart rows={damageRows} comboCount={comboCount(filter)} startYear={startYear} onStartYearChange={setStartYear} unitLabel={UNIT_CONFIG.damage.label} />
       </section>
 
       <section className="section" id="regional">

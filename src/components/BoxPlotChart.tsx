@@ -14,7 +14,7 @@ const MODEL_COLOR: Record<Model, string> = {
 
 const W = 920
 const H = 440
-const MARGIN = { top: 16, right: 16, bottom: 48, left: 64 }
+const MARGIN = { top: 34, right: 16, bottom: 48, left: 64 }
 
 const rowKey = (r: SccRow) => `${r.model}|${r.ecs}|${r.dr}`
 
@@ -77,8 +77,8 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
             ))}
             {/* 0 기준선 */}
             {lo < 0 && <line x1={0} x2={innerW} y1={y(0)} y2={y(0)} stroke="var(--ink-muted)" strokeWidth={1} />}
-            {/* Y축 단위 */}
-            <text x={-MARGIN.left + 6} y={-4} fontSize={11} fill="var(--ink-secondary)">{unitLabel}</text>
+            {/* Y축 단위 — 눈금 숫자와 겹치지 않도록 여백 위에 배치 */}
+            <text x={-MARGIN.left + 6} y={-14} fontSize={11} fill="var(--ink-secondary)">{unitLabel}</text>
 
             {/* 박스 (S-1, S-3) */}
             {sorted.map((r) => {
@@ -148,10 +148,34 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
             </div>
           ))}
           <div style={{ height: 6 }} />
-          <div className="legend-row"><span>상자 = 25~75 백분위수</span></div>
-          <div className="legend-row"><span>가운데선 = 중앙값(p50)</span></div>
-          <div className="legend-row"><span>수염 = 5~95 백분위수</span></div>
-          <div className="legend-row"><span>◆ = 평균(mean)</span></div>
+          {/* 인코딩 범례 — 글자 대신 실제 모양(글리프)으로 표시 */}
+          <div className="legend-row">
+            <svg width={22} height={16}>
+              <rect x={4} y={3} width={14} height={10} rx={2} fill="var(--accent)" fillOpacity={0.28} stroke="var(--accent)" strokeWidth={1.4} />
+            </svg>
+            <span>상자 = 25~75 백분위수</span>
+          </div>
+          <div className="legend-row">
+            <svg width={22} height={16}>
+              <rect x={4} y={3} width={14} height={10} rx={2} fill="none" stroke="var(--border)" strokeWidth={1.2} />
+              <line x1={4} x2={18} y1={8} y2={8} stroke="var(--accent)" strokeWidth={2} />
+            </svg>
+            <span>가운데선 = 중앙값(p50)</span>
+          </div>
+          <div className="legend-row">
+            <svg width={22} height={16}>
+              <line x1={11} x2={11} y1={2} y2={14} stroke="var(--accent)" strokeWidth={1.4} />
+              <line x1={7} x2={15} y1={2} y2={2} stroke="var(--accent)" strokeWidth={1.4} />
+              <line x1={7} x2={15} y1={14} y2={14} stroke="var(--accent)" strokeWidth={1.4} />
+            </svg>
+            <span>수염 = 5~95 백분위수</span>
+          </div>
+          <div className="legend-row">
+            <svg width={22} height={16}>
+              <path d="M 11 3 l 5 5 l -5 5 l -5 -5 Z" fill="var(--ink)" />
+            </svg>
+            <span>평균(mean)</span>
+          </div>
         </div>
       </div>
 

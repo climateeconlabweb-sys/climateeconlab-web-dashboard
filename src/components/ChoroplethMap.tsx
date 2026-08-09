@@ -46,38 +46,78 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
     return new Map(valued.map((r, i) => [r.sigCd, ranks[i]]))
   }, [valued])
 
-  const { path, transform } = useMemo(() => {
-    if (!features || features.length === 0) return { path: null, transform: undefined }
+  const path = useMemo(() => {
+    if (!features || features.length === 0) return null
     const projection = geoMercator().fitSize([W, H], { type: 'FeatureCollection', features })
-    const p = geoPath(projection)
-    let transform: string | undefined
-    if (selected) {
-      const sel = features.filter((f) => f.properties.code === selected)
-      if (sel.length) {
-        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
-        sel.forEach((f) => {
-          const [[a, b], [c, d]] = p.bounds(f)
-          x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d)
-        })
-        const scale = Math.min(6, 0.7 / Math.max((x1 - x0) / W, (y1 - y0) / H))
-        const tx = W / 2 - scale * (x0 + x1) / 2
-        const ty = H / 2 - scale * (y0 + y1) / 2
-        transform = `translate(${tx},${ty}) scale(${scale})`
-      }
-    }
-    return { path: p, transform }
-  }, [features, selected])
+    return geoPath(projection)
+  }, [features])
+
+  // 경계 패스는 한 번만 계산해 재사용 — 호버 때마다 229개를 다시 그리면 끊긴다
+  const ds = useMemo(() => (features && path ? features.map((f) => path(f) ?? '') : []), [features, path])
+
+  const fills = useMemo(
+    () =>
+      (features ?? []).map((f) => {
+        const row = byCode.get(f.properties.code)
+        if (!row || row.value === null) return 'url(#hatch-nodata)'
+        return `var(--map-${binIndex(row.value, thresholds) + 1})`
+      }),
+    [features, byCode, thresholds],
+  )
+
+  const transform = useMemo(() => {
+    if (!features || !path || !selected) return undefined
+    const sel = features.filter((f) => f.properties.code === selected)
+    if (!sel.length) return undefined
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+    sel.forEach((f) => {
+      const [[a, b], [c, d]] = path.bounds(f)
+      x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d)
+    })
+    const scale = Math.min(6, 0.7 / Math.max((x1 - x0) / W, (y1 - y0) / H))
+    const tx = W / 2 - scale * (x0 + x1) / 2
+    const ty = H / 2 - scale * (y0 + y1) / 2
+    return `translate(${tx},${ty}) scale(${scale})`
+  }, [features, path, selected])
+
+  // 기본 지도 레이어 — 호버/툴팁 상태와 무관하게 캐시 (호버 강조는 아래 오버레이가 담당)
+  const basePaths = useMemo(
+    () =>
+      (features ?? []).map((f, i) => {
+        const code = f.properties.code
+        const row = byCode.get(code)
+        return (
+          <path
+            key={`${code}-${i}`}
+            d={ds[i]}
+            fill={fills[i]}
+            stroke="var(--bg)"
+            strokeWidth={0.5 / (transform ? 3 : 1)}
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => { e.stopPropagation(); setSelected((s) => (s === code ? null : code)) }}
+            onMouseEnter={() => setHovered(code)}
+            onMouseMove={(e) => {
+              const name = row ? `${row.sidoNm} ${row.sigunguNm}` : f.properties.name
+              const lines = [name]
+              if (row && row.value !== null) {
+                lines.push(`피해비용 ${fmtFull(row.value)} (${unitLabel})`)
+                lines.push(`전국 ${rankByCode.get(code)}위 / ${valued.length}곳`)
+              } else {
+                lines.push('데이터 없음')
+              }
+              setTooltip({ x: e.clientX, y: e.clientY, lines })
+            }}
+          />
+        )
+      }),
+    [features, ds, fills, transform, byCode, rankByCode, valued.length, unitLabel],
+  )
 
   if (features === null) return <div className="empty-state">지도를 불러오는 중…</div>
   if (features.length === 0 || !path) return <div className="empty-state">지도 데이터를 불러오지 못했습니다</div>
 
-  const fillOf = (code: string): string => {
-    const row = byCode.get(code)
-    if (!row || row.value === null) return 'url(#hatch-nodata)'
-    return `var(--map-${binIndex(row.value, thresholds) + 1})`
-  }
-
   const selectedRow = selected ? byCode.get(selected) : undefined
+  const highlightWidth = 1.2 / (transform ? 3 : 1)
 
   return (
     <div>
@@ -88,6 +128,7 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
         role="img"
         aria-label="지역별 피해비용 지도"
         onClick={() => setSelected(null)}
+        onMouseLeave={() => { setHovered(null); setTooltip(null) }}
       >
         <defs>
           <pattern id="hatch-nodata" width={6} height={6} patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
@@ -95,33 +136,22 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
             <line x1={0} y1={0} x2={0} y2={6} stroke="var(--ink-muted)" strokeWidth={1.2} />
           </pattern>
         </defs>
+        {/* 바다(빈 영역)로 나가면 툴팁 해제 */}
+        <rect width={W} height={H} fill="transparent" onMouseEnter={() => { setHovered(null); setTooltip(null) }} />
         <g transform={transform} style={{ transition: 'transform 0.45s ease' }}>
-          {features.map((f, i) => {
+          {basePaths}
+          {/* 호버·선택 강조 오버레이 */}
+          {(features ?? []).map((f, i) => {
             const code = f.properties.code
-            const row = byCode.get(code)
-            const isHover = hovered === code
+            if (code !== hovered && code !== selected) return null
             return (
               <path
-                key={`${code}-${i}`}
-                d={path(f) ?? undefined}
-                fill={fillOf(code)}
-                stroke={isHover || selected === code ? 'var(--ink)' : 'var(--bg)'}
-                strokeWidth={(isHover || selected === code ? 1.2 : 0.5) / (transform ? 3 : 1)}
-                style={{ cursor: 'pointer' }}
-                onClick={(e) => { e.stopPropagation(); setSelected(selected === code ? null : code) }}
-                onMouseEnter={() => setHovered(code)}
-                onMouseLeave={() => { setHovered(null); setTooltip(null) }}
-                onMouseMove={(e) => {
-                  const name = row ? `${row.sidoNm} ${row.sigunguNm}` : f.properties.name
-                  const lines = [name]
-                  if (row && row.value !== null) {
-                    lines.push(`피해비용 ${fmtFull(row.value)} (${unitLabel})`)
-                    lines.push(`전국 ${rankByCode.get(code)}위 / ${valued.length}곳`)
-                  } else {
-                    lines.push('데이터 없음')
-                  }
-                  setTooltip({ x: e.clientX, y: e.clientY, lines })
-                }}
+                key={`hl-${code}-${i}`}
+                d={ds[i]}
+                fill="none"
+                stroke="var(--ink)"
+                strokeWidth={highlightWidth}
+                pointerEvents="none"
               />
             )
           })}
