@@ -5,7 +5,7 @@
     </marker>
   </defs>
   <rect width="760" height="300" fill="#ffffff"/>
-  <text x="24" y="28" font-size="12.5" font-weight="700" fill="#1d2530">RICE — 램지 최적성장 순환 × 지역 분해</text>
+  <text x="24" y="28" font-size="12.5" font-weight="700" fill="#1d2530">RICE: 램지 최적성장 순환 × 지역 분해</text>
 
   <g>
     <rect x="70" y="48" width="180" height="46" rx="9" fill="#f7f8fa" stroke="#3ba272"/>
@@ -35,7 +35,7 @@
 
   <g>
     <rect x="70" y="222" width="562" height="52" rx="9" fill="#f7f8fa" stroke="#e2e5ea"/>
-    <text x="86" y="243" font-size="11" font-weight="700" fill="#1d2530">DICE의 지역 분해판 — 세계를 복수 권역으로 나누어 각각 최적화</text>
+    <text x="86" y="243" font-size="11" font-weight="700" fill="#1d2530">DICE의 지역 분해판: 세계를 복수 권역으로 나누어 각각 최적화</text>
     <g font-size="10" fill="#556172">
       <rect x="86" y="252" width="52" height="16" rx="8" fill="#ffffff" stroke="#e2e5ea"/><text x="112" y="264" text-anchor="middle">미국</text>
       <rect x="144" y="252" width="52" height="16" rx="8" fill="#ffffff" stroke="#e2e5ea"/><text x="170" y="264" text-anchor="middle">중국</text>

@@ -30,7 +30,8 @@ const tdL: React.CSSProperties = { ...td, textAlign: 'left' }
 
 function ScrollTable({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ maxHeight: 620, overflow: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+    // 화면 아래 끝까지 사용 (상단 내비·제목·탭 높이만큼 제외)
+    <div style={{ height: 'calc(100dvh - 248px)', minHeight: 320, overflow: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>{children}</table>
     </div>
   )
