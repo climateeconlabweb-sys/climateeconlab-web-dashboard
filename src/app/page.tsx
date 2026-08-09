@@ -8,6 +8,8 @@ import ChoroplethMap from '@/components/ChoroplethMap'
 import Histogram from '@/components/Histogram'
 import RegionTable from '@/components/RegionTable'
 import { quantileThresholds } from '@/lib/stats'
+import ChartToolbar from '@/components/ChartToolbar'
+import { excelFileName } from '@/lib/download'
 import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
@@ -44,6 +46,7 @@ export default function Page() {
         <h2>SCC — 탄소의 사회적 비용</h2>
         <p className="section-note">선택 조건 {comboCount(filter)}개 조합</p>
         <BoxPlotChart rows={sccRows} unitLabel={UNIT_CONFIG.scc.label} />
+        <ChartToolbar svgId="scc-chart" imageName="SCC" excelRows={sccRows} excelName={excelFileName('SCC', filter)} />
       </section>
 
       <section className="section" id="damage">
@@ -51,6 +54,7 @@ export default function Page() {
         <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 연도 2025~{endYear}</p>
         <FanChart rows={damageRows} comboCount={comboCount(filter)} endYear={endYear} unitLabel={UNIT_CONFIG.damage.label} />
         <YearSlider value={endYear} onChange={setEndYear} />
+        <ChartToolbar svgId="damage-chart" imageName="피해비용" excelRows={damageRows} excelName={excelFileName('Damage', filter)} />
       </section>
 
       <section className="section" id="regional">
@@ -63,6 +67,7 @@ export default function Page() {
             <RegionTable regional={data.regional} />
           </div>
         </div>
+        <ChartToolbar svgId="regional-map" imageName="지역별_피해비용" excelRows={data.regional} excelName={excelFileName('Regional', filter)} />
       </section>
     </main>
   )
