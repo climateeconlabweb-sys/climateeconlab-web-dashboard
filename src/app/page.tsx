@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import FilterBar from '@/components/FilterBar'
+import BoxPlotChart from '@/components/BoxPlotChart'
+import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
 import dataset from '@/data/dataset.json'
@@ -31,8 +33,8 @@ export default function Page() {
 
       <section className="section" id="scc">
         <h2>SCC — 탄소의 사회적 비용</h2>
-        <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 데이터 {sccRows.length}건</p>
-        {/* Task 7: BoxPlotChart */}
+        <p className="section-note">선택 조건 {comboCount(filter)}개 조합</p>
+        <BoxPlotChart rows={sccRows} unitLabel={UNIT_CONFIG.scc.label} />
       </section>
 
       <section className="section" id="damage">
