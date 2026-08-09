@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" font-family="'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="ary" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#d4a017"/>
+    </marker>
+  </defs>
+  <rect width="760" height="280" fill="#ffffff"/>
+  <text x="24" y="28" font-size="12.5" font-weight="700" fill="#1d2530">WITCH — 성장 모형과 에너지 기술을 결합한 하이브리드</text>
+
+  <g>
+    <rect x="24" y="52" width="420" height="70" rx="10" fill="#f7f8fa" stroke="#d4a017"/>
+    <text x="234" y="80" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">거시경제 최적성장 (top-down)</text>
+    <text x="234" y="100" font-size="10.5" fill="#556172" text-anchor="middle">램지형 성장 구조 · 권역 간 동태 게임</text>
+  </g>
+
+  <line x1="214" y1="122" x2="214" y2="168" stroke="#d4a017" stroke-width="1.6" marker-end="url(#ary)"/>
+  <line x1="254" y1="168" x2="254" y2="122" stroke="#d4a017" stroke-width="1.6" marker-end="url(#ary)"/>
+  <text x="284" y="150" font-size="10.5" fill="#d4a017" font-weight="600">단단히 결합</text>
+
+  <g>
+    <rect x="24" y="172" width="420" height="70" rx="10" fill="#f7f8fa" stroke="#d4a017"/>
+    <text x="234" y="200" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">에너지 시스템 상세 (bottom-up)</text>
+    <text x="234" y="220" font-size="10.5" fill="#556172" text-anchor="middle">발전 기술 · 연료 구성 · 전환 경로</text>
+  </g>
+
+  <g>
+    <rect x="500" y="92" width="236" height="110" rx="10" fill="#fbf6e7" stroke="#d4a017"/>
+    <text x="618" y="120" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">내생적 기술 변화</text>
+    <text x="618" y="142" font-size="10.5" fill="#556172" text-anchor="middle">R&amp;D 투자 · 학습곡선이</text>
+    <text x="618" y="158" font-size="10.5" fill="#556172" text-anchor="middle">저탄소 기술 비용을</text>
+    <text x="618" y="174" font-size="10.5" fill="#556172" text-anchor="middle">모형 안에서 스스로 낮춤</text>
+  </g>
+  <path d="M 444 87 Q 490 87 497 105" fill="none" stroke="#d4a017" stroke-width="1.5" marker-end="url(#ary)"/>
+  <path d="M 497 190 Q 490 207 448 207" fill="none" stroke="#d4a017" stroke-width="1.5" marker-end="url(#ary)"/>
+
+  <text x="24" y="264" font-size="10.5" fill="#8a94a3">감축 정책이 에너지 시스템과 기술 혁신을 거쳐 경제로 되먹임되는 경로를 정교하게 포착</text>
+</svg>

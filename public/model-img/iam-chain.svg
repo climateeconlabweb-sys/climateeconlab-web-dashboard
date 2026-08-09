@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" font-family="'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#8a94a3"/>
+    </marker>
+  </defs>
+  <rect width="760" height="180" fill="#ffffff"/>
+  <text x="24" y="28" font-size="12.5" font-weight="700" fill="#1d2530">통합평가모형(IAM)의 인과 사슬</text>
+
+  <g>
+    <rect x="24" y="52" width="158" height="86" rx="10" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <rect x="24" y="52" width="158" height="5" rx="2.5" fill="#2563eb"/>
+    <text x="103" y="84" font-size="13" font-weight="700" fill="#1d2530" text-anchor="middle">배출 시나리오</text>
+    <text x="103" y="104" font-size="10.5" fill="#556172" text-anchor="middle">경제활동 · 에너지 사용이</text>
+    <text x="103" y="119" font-size="10.5" fill="#556172" text-anchor="middle">낳는 CO₂ 배출</text>
+  </g>
+  <line x1="186" y1="95" x2="212" y2="95" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <g>
+    <rect x="216" y="52" width="158" height="86" rx="10" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <rect x="216" y="52" width="158" height="5" rx="2.5" fill="#2563eb"/>
+    <text x="295" y="84" font-size="13" font-weight="700" fill="#1d2530" text-anchor="middle">기후 반응</text>
+    <text x="295" y="104" font-size="10.5" fill="#556172" text-anchor="middle">탄소순환 → 기온 상승</text>
+    <text x="295" y="119" font-size="10.5" fill="#556172" text-anchor="middle">(기후민감도 ECS)</text>
+  </g>
+  <line x1="378" y1="95" x2="404" y2="95" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <g>
+    <rect x="408" y="52" width="158" height="86" rx="10" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <rect x="408" y="52" width="158" height="5" rx="2.5" fill="#2563eb"/>
+    <text x="487" y="84" font-size="13" font-weight="700" fill="#1d2530" text-anchor="middle">경제 피해</text>
+    <text x="487" y="104" font-size="10.5" fill="#556172" text-anchor="middle">피해함수: 기온 상승을</text>
+    <text x="487" y="119" font-size="10.5" fill="#556172" text-anchor="middle">GDP 손실로 환산</text>
+  </g>
+  <line x1="570" y1="95" x2="596" y2="95" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <g>
+    <rect x="600" y="52" width="140" height="86" rx="10" fill="#eff4ff" stroke="#2563eb"/>
+    <rect x="600" y="52" width="140" height="5" rx="2.5" fill="#2563eb"/>
+    <text x="670" y="84" font-size="13" font-weight="700" fill="#1d2530" text-anchor="middle">SCC · 피해비용</text>
+    <text x="670" y="104" font-size="10.5" fill="#556172" text-anchor="middle">할인율(DR)로 미래 피해를</text>
+    <text x="670" y="119" font-size="10.5" fill="#556172" text-anchor="middle">현재가치로 환산</text>
+  </g>
+
+  <text x="24" y="166" font-size="10.5" fill="#8a94a3">본 사이트의 필터(기후민감도 · 할인율)는 위 사슬의 두 핵심 가정을 사용자가 바꿔보는 장치다</text>
+</svg>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" font-family="'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#5b8ff9"/>
+    </marker>
+  </defs>
+  <rect width="760" height="280" fill="#ffffff"/>
+  <text x="24" y="28" font-size="12.5" font-weight="700" fill="#1d2530">FUND — 부문별 피해를 쌓아 올리는 구조</text>
+
+  <g font-size="11.5" fill="#1d2530">
+    <rect x="24" y="50" width="180" height="34" rx="8" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <text x="114" y="71" text-anchor="middle">농업 (CO₂ 시비 효과 포함)</text>
+    <rect x="24" y="92" width="180" height="34" rx="8" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <text x="114" y="113" text-anchor="middle">냉난방 에너지 수요</text>
+    <rect x="24" y="134" width="180" height="34" rx="8" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <text x="114" y="155" text-anchor="middle">해수면 상승 · 연안</text>
+    <rect x="24" y="176" width="180" height="34" rx="8" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <text x="114" y="197" text-anchor="middle">건강</text>
+    <rect x="24" y="218" width="180" height="34" rx="8" fill="#f7f8fa" stroke="#e2e5ea"/>
+    <text x="114" y="239" text-anchor="middle">생태계</text>
+  </g>
+
+  <g stroke="#5b8ff9" stroke-width="1.4">
+    <line x1="204" y1="67"  x2="308" y2="128" marker-end="url(#arb)"/>
+    <line x1="204" y1="109" x2="308" y2="138" marker-end="url(#arb)"/>
+    <line x1="204" y1="151" x2="308" y2="151" marker-end="url(#arb)"/>
+    <line x1="204" y1="193" x2="308" y2="164" marker-end="url(#arb)"/>
+    <line x1="204" y1="235" x2="308" y2="174" marker-end="url(#arb)"/>
+  </g>
+
+  <g>
+    <rect x="312" y="112" width="200" height="78" rx="10" fill="#f7f8fa" stroke="#5b8ff9"/>
+    <text x="412" y="142" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">부문별 피해함수를</text>
+    <text x="412" y="160" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">개별 추정</text>
+    <text x="412" y="178" font-size="10" fill="#556172" text-anchor="middle">부문마다 기온 반응이 다름</text>
+  </g>
+  <line x1="512" y1="151" x2="566" y2="151" stroke="#5b8ff9" stroke-width="1.6" marker-end="url(#arb)"/>
+
+  <g>
+    <rect x="570" y="112" width="166" height="78" rx="10" fill="#eef3ff" stroke="#5b8ff9"/>
+    <text x="653" y="146" font-size="12.5" font-weight="700" fill="#1d2530" text-anchor="middle">합산</text>
+    <text x="653" y="166" font-size="11" fill="#556172" text-anchor="middle">총 피해 · SCC</text>
+  </g>
+
+  <text x="312" y="234" font-size="10.5" fill="#8a94a3">세계 16개 권역 단위 · 국가 단위 확장판(FUND 3.9n)도 존재</text>
+  <text x="312" y="252" font-size="10.5" fill="#8a94a3">"피해가 어디에서, 무엇 때문에 발생하는가"를 분해해 보여줄 수 있는 구조</text>
+</svg>

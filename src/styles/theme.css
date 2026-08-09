@@ -136,6 +136,9 @@ article table { border-collapse: collapse; font-size: 13px; min-width: 560px; }
 article th, article td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
 article th { background: var(--surface); }
 article img { max-width: 100%; height: auto; }
+article figure { margin: 20px 0; }
+article figure img { border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+article figcaption { font-size: 12.5px; color: var(--ink-muted); margin-top: 6px; }
 
 @media (max-width: 1024px) {
   .section-body { grid-template-columns: 1fr; }
