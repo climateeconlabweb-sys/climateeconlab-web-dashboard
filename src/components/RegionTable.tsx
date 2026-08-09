@@ -17,7 +17,7 @@ export default function RegionTable({ regional }: { regional: RegionalRow[] }) {
   return (
     <div>
       <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>지역별 값 — 숫자로 보기</div>
-      <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+      <div style={{ maxHeight: 560, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
           <thead>
             <tr style={{ position: 'sticky', top: 0, background: 'var(--surface)' }}>
