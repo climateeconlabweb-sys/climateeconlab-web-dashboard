@@ -1,69 +1,51 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+import { useState } from 'react'
+import FilterBar from '@/components/FilterBar'
+import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
+import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
+import dataset from '@/data/dataset.json'
 
-export default function Home() {
+const data = dataset as unknown as {
+  globalScc: SccRow[]
+  korScc: SccRow[]
+  globalDamage: DamageRow[]
+  korDamage: DamageRow[]
+  regional: RegionalRow[]
+}
+
+export default function Page() {
+  const [filter, setFilter] = useState(DEFAULT_FILTER)
+
+  const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
+  const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    <main>
+      <nav className="top-nav">
+        <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
+        <a href="/" className="active">데이터 보기</a>
+        <a href="/model">모형 설명</a>
+      </nav>
+
+      <FilterBar value={filter} onChange={setFilter} />
+
+      <section className="section" id="scc">
+        <h2>SCC — 탄소의 사회적 비용</h2>
+        <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 데이터 {sccRows.length}건</p>
+        {/* Task 7: BoxPlotChart */}
+      </section>
+
+      <section className="section" id="damage">
+        <h2>기후변화 피해비용</h2>
+        <p className="section-note">선택 조건 {comboCount(filter)}개 조합 · 데이터 {damageRows.length}건</p>
+        {/* Task 8: FanChart + YearSlider */}
+      </section>
+
+      <section className="section" id="regional">
+        <h2>지역별 피해비용</h2>
+        <p className="section-note">FUND 모형 기준, 모형 내장 조건 사용 · 시군구 {data.regional.length}곳 (상단 필터와 무관)</p>
+        {/* Task 10: ChoroplethMap + Histogram + RegionTable */}
+      </section>
+    </main>
+  )
 }

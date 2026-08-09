@@ -1,0 +1,84 @@
+/* 색상 토큰 — 색감 일괄 교체 대비 전 컴포넌트가 변수만 참조 (PRD §6) */
+:root {
+  /* 모형 4색 (고정 배정, S-4) — Task 14에서 색각 검증 후 확정 */
+  --model-fund: #5b8ff9;
+  --model-page: #e8684a;
+  --model-rice: #3ba272;
+  --model-witch: #d4a017;
+
+  /* 지도 순차 램프 7단계 (M-2, ColorBrewer Blues) */
+  --map-1: #eff3ff;
+  --map-2: #c6dbef;
+  --map-3: #9ecae1;
+  --map-4: #6baed6;
+  --map-5: #4292c6;
+  --map-6: #2171b5;
+  --map-7: #084594;
+
+  /* 표면·텍스트 */
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --border: #e2e5ea;
+  --ink: #1d2530;
+  --ink-secondary: #556172;
+  --ink-muted: #8a94a3;
+  --accent: #2563eb;
+
+  --radius: 8px;
+  --chart-grid: #eceef2;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif; }
+
+.top-nav {
+  display: flex; align-items: center; gap: 24px;
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+}
+.top-nav .brand { font-weight: 700; font-size: 15px; }
+.top-nav a { color: var(--ink-secondary); text-decoration: none; font-size: 14px; padding: 6px 2px; }
+.top-nav a.active { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); }
+
+.filter-bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+  padding: 12px 24px; background: var(--bg); border-bottom: 1px solid var(--border);
+}
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-group .group-label { font-size: 13px; color: var(--ink-secondary); margin-right: 2px; }
+.filter-btn {
+  border: 1px solid var(--border); background: var(--bg); color: var(--ink-secondary);
+  border-radius: var(--radius); padding: 5px 12px; font-size: 13px; cursor: pointer;
+}
+.filter-btn.selected { border-color: var(--accent); color: var(--accent); font-weight: 600; background: #eff4ff; }
+.filter-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.filter-note { font-size: 12px; color: var(--ink-muted); }
+
+.section { padding: 28px 24px; border-bottom: 1px solid var(--border); }
+.section h2 { font-size: 17px; margin: 0 0 4px; }
+.section .section-note { font-size: 13px; color: var(--ink-secondary); margin: 0 0 16px; }
+.section-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+.side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.legend { font-size: 12.5px; color: var(--ink-secondary); display: flex; flex-direction: column; gap: 6px; }
+.legend .legend-row { display: flex; align-items: center; gap: 8px; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+
+.toolbar { display: flex; gap: 8px; margin-top: 10px; }
+.toolbar button {
+  border: 1px solid var(--border); background: var(--bg); color: var(--ink-secondary);
+  border-radius: var(--radius); padding: 6px 12px; font-size: 12.5px; cursor: pointer;
+}
+.toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+
+.chart-tooltip {
+  position: fixed; pointer-events: none; z-index: 50;
+  background: var(--ink); color: #fff; border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; line-height: 1.5; max-width: 280px;
+}
+
+.empty-state { padding: 48px 0; text-align: center; color: var(--ink-muted); font-size: 14px; }
+
+@media (max-width: 1024px) {
+  .section-body { grid-template-columns: 1fr; }
+}
