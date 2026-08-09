@@ -227,8 +227,8 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
                 key={l.name}
                 x={l.x} y={l.y}
                 textAnchor="middle" dy="0.35em"
-                fontSize={13} fontWeight={700} fill="var(--ink)"
-                stroke="var(--bg)" strokeWidth={3} paintOrder="stroke"
+                fontSize={10} fontWeight={600} fill="var(--ink-secondary)"
+                stroke="var(--bg)" strokeWidth={2.5} paintOrder="stroke"
                 pointerEvents="none"
               >
                 {l.name}
