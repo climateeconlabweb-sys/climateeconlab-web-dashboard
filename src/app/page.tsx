@@ -4,6 +4,10 @@ import FilterBar from '@/components/FilterBar'
 import BoxPlotChart from '@/components/BoxPlotChart'
 import FanChart from '@/components/FanChart'
 import YearSlider from '@/components/YearSlider'
+import ChoroplethMap from '@/components/ChoroplethMap'
+import Histogram from '@/components/Histogram'
+import RegionTable from '@/components/RegionTable'
+import { quantileThresholds } from '@/lib/stats'
 import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
@@ -23,6 +27,8 @@ export default function Page() {
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
+  const regionalValues = data.regional.filter((r) => r.value !== null).map((r) => r.value as number)
+  const regionalThresholds = quantileThresholds(regionalValues, 7)
 
   return (
     <main>
@@ -50,7 +56,13 @@ export default function Page() {
       <section className="section" id="regional">
         <h2>지역별 피해비용</h2>
         <p className="section-note">FUND 모형 기준, 모형 내장 조건 사용 · 시군구 {data.regional.length}곳 (상단 필터와 무관)</p>
-        {/* Task 10: ChoroplethMap + Histogram + RegionTable */}
+        <div className="section-body">
+          <ChoroplethMap regional={data.regional} unitLabel={UNIT_CONFIG.damage.label} />
+          <div className="side-panel">
+            <Histogram values={regionalValues} thresholds={regionalThresholds} />
+            <RegionTable regional={data.regional} />
+          </div>
+        </div>
       </section>
     </main>
   )
