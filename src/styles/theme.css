@@ -103,7 +103,8 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); fo
 .chart-tooltip {
   position: fixed; pointer-events: none; z-index: 50;
   background: var(--ink); color: #fff; border-radius: 6px;
-  padding: 8px 10px; font-size: 12px; line-height: 1.5; max-width: 280px;
+  padding: 8px 10px; font-size: 12px; line-height: 1.5;
+  max-width: min(300px, calc(100vw - 24px));
 }
 
 .empty-state { padding: 48px 0; text-align: center; color: var(--ink-muted); font-size: 14px; }
