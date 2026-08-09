@@ -64,6 +64,7 @@ export default function Page() {
         <a href="/" className="active">데이터 보기</a>
         <a href="/model">모형 설명</a>
         <a href="/samples">데이터 샘플 보기</a>
+        <a href="/data">샘플 데이터</a>
       </nav>
 
       <FilterBar value={filter} onChange={setFilter} />

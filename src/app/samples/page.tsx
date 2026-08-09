@@ -6,7 +6,7 @@ import {
   DumbbellChart, ErrorBarChart, SccHeatmap, SlopeSensitivity,
   DotPlot, MedianBars, ModelCards,
   ModelMedianLines, ModelSmallMultiples, YearConditionHeatmap, EndpointSlope, SparklineTable,
-  TopRegionsBar, SidoTileMap,
+  TopRegionsBar,
 } from './charts'
 
 const data = dataset as unknown as {
@@ -62,6 +62,7 @@ export default function SamplesPage() {
         <a href="/">데이터 보기</a>
         <a href="/model">모형 설명</a>
         <a href="/samples" className="active">데이터 샘플 보기</a>
+        <a href="/data">샘플 데이터</a>
       </nav>
 
       <section className="section">
@@ -142,11 +143,6 @@ export default function SamplesPage() {
         <Sample no={13} title="상위 20개 지역 막대 차트" badge="partial"
           dataUsed={`시군구별 피해비용 상위 20곳 (${damageUnit})`}>
           <TopRegionsBar regional={regional} unitLabel={damageUnit} />
-        </Sample>
-
-        <Sample no={14} title="시도 타일맵 (격자 근사 지도)" badge="partial"
-          dataUsed={`시군구별 피해비용 (${damageUnit}) — 타일 하나 = 시군구 한 곳, 마우스를 올리면 이름·값 표시`}>
-          <SidoTileMap regional={regional} />
         </Sample>
       </section>
     </main>
