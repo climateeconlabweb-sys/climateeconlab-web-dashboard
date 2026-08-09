@@ -1,7 +1,6 @@
 'use client'
 import { MODELS, ECS_VALUES, DR_VALUES, type Ecs, type Dr, type Model } from '@/lib/types'
 import type { FilterState } from '@/lib/filter'
-import { UNIT_CONFIG } from '@/data/config'
 
 interface Props {
   value: FilterState
@@ -51,7 +50,6 @@ function Select({ label, value, options, onChange }: {
 }
 
 export default function FilterBar({ value, onChange }: Props) {
-  const currencyDisabled = UNIT_CONFIG.usdRate === null
   return (
     <div className="filter-bar">
       {/* 데스크톱: 버튼 그룹 */}
@@ -91,13 +89,11 @@ export default function FilterBar({ value, onChange }: Props) {
               key={cur}
               type="button"
               className={`filter-btn${value.currency === cur ? ' selected' : ''}`}
-              disabled={currencyDisabled && cur === 'USD'}
               onClick={() => onChange({ ...value, currency: cur })}
             >
               {cur === 'KRW' ? '원' : '달러'}
             </button>
           ))}
-          {currencyDisabled && <span className="filter-note">단위 확정 후 사용할 수 있습니다</span>}
         </div>
       </div>
 
@@ -127,7 +123,7 @@ export default function FilterBar({ value, onChange }: Props) {
           label="통화" value={value.currency}
           options={[
             { value: 'KRW', text: '원' },
-            { value: 'USD', text: currencyDisabled ? '달러 (단위 확정 후)' : '달러', disabled: currencyDisabled },
+            { value: 'USD', text: '달러' },
           ]}
           onChange={(v) => onChange({ ...value, currency: v as FilterState['currency'] })}
         />

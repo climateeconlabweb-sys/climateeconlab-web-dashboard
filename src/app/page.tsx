@@ -37,7 +37,23 @@ export default function Page() {
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
-  const regionalValues = data.regional.filter((r) => r.value !== null).map((r) => r.value as number)
+
+  // 달러 선택 시 표시 값만 환산 (만 원 × 10,000 ÷ 환율) — 엑셀 다운로드는 원자료(만 원) 유지
+  const usd = filter.currency === 'USD'
+  const cv = usd ? 10000 / fx.rate : 1
+  const sccDisplay = usd
+    ? sccRows.map((r) => ({ ...r, mean: r.mean * cv, p05: r.p05 * cv, p25: r.p25 * cv, p50: r.p50 * cv, p75: r.p75 * cv, p95: r.p95 * cv }))
+    : sccRows
+  const damageDisplay = usd
+    ? damageRows.map((r) => ({ ...r, mean: r.mean * cv, p05: r.p05 * cv, p25: r.p25 * cv, p50: r.p50 * cv, p75: r.p75 * cv, p95: r.p95 * cv }))
+    : damageRows
+  const regionalDisplay = usd
+    ? data.regional.map((r) => ({ ...r, value: r.value === null ? null : r.value * cv }))
+    : data.regional
+  const sccUnit = usd ? UNIT_CONFIG.scc.usdLabel : UNIT_CONFIG.scc.label
+  const damageUnit = usd ? UNIT_CONFIG.damage.usdLabel : UNIT_CONFIG.damage.label
+
+  const regionalValues = regionalDisplay.filter((r) => r.value !== null).map((r) => r.value as number)
   const regionalThresholds = quantileThresholds(regionalValues, 7)
 
   return (
@@ -59,7 +75,7 @@ export default function Page() {
           <DownloadMenu svgId="scc-chart" imageName="SCC" excelRows={sccRows} excelName={excelFileName('SCC', filter)} />
         </div>
         <SccStatCard rows={sccRows} filter={filter} fx={fx} unitLabel={UNIT_CONFIG.scc.label} />
-        <BoxPlotChart rows={sccRows} unitLabel={UNIT_CONFIG.scc.label} />
+        <BoxPlotChart rows={sccDisplay} unitLabel={sccUnit} />
       </section>
 
       <section className="section" id="damage">
@@ -70,7 +86,7 @@ export default function Page() {
           </div>
           <DownloadMenu svgId="damage-chart" imageName="피해비용" excelRows={damageRows} excelName={excelFileName('Damage', filter)} />
         </div>
-        <FanChart rows={damageRows} comboCount={comboCount(filter)} startYear={startYear} onStartYearChange={setStartYear} unitLabel={UNIT_CONFIG.damage.label} />
+        <FanChart rows={damageDisplay} comboCount={comboCount(filter)} startYear={startYear} onStartYearChange={setStartYear} unitLabel={damageUnit} />
       </section>
 
       <section className="section" id="regional">
@@ -82,10 +98,10 @@ export default function Page() {
           <DownloadMenu svgId="regional-map" imageName="지역별_피해비용" excelRows={data.regional} excelName={excelFileName('Regional', filter)} />
         </div>
         <div className="section-body">
-          <ChoroplethMap regional={data.regional} unitLabel={UNIT_CONFIG.damage.label} />
+          <ChoroplethMap regional={regionalDisplay} unitLabel={damageUnit} />
           <div className="side-panel">
             <Histogram values={regionalValues} thresholds={regionalThresholds} />
-            <RegionTable regional={data.regional} />
+            <RegionTable regional={regionalDisplay} />
           </div>
         </div>
       </section>

@@ -45,8 +45,15 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
   if (!stat) return null
 
   const region = filter.region === 'KOR' ? '한국' : '전 세계'
-  const usd = (stat.value * 10000) / fx.rate
-  const usdText = usd.toLocaleString('en-US', { maximumFractionDigits: Math.abs(usd) >= 100 ? 0 : 1 })
+  const usdMode = filter.currency === 'USD'
+  const toUsd = (v: number) => (v * 10000) / fx.rate
+  const usdText = (v: number) =>
+    toUsd(v).toLocaleString('en-US', { maximumFractionDigits: Math.abs(toUsd(v)) >= 100 ? 0 : 1 })
+  // 주 숫자·범위는 선택 통화, 보조 줄은 반대 통화
+  const mainText = usdMode ? `$${usdText(stat.value)}` : fmtFull(stat.value)
+  const mainUnit = usdMode ? 'USD/tCO₂' : unitLabel
+  const subText = usdMode ? `= ${fmtFull(stat.value)} ${unitLabel}` : `≈ $${usdText(stat.value)} USD`
+  const rangeText = (v: number) => (usdMode ? `$${usdText(v)}` : fmtFull(v))
   const pos = stat.hi > stat.lo ? Math.min(1, Math.max(0, (stat.value - stat.lo) / (stat.hi - stat.lo))) : 0.5
 
   return (
@@ -56,15 +63,15 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
     }}>
       <div style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>탄소의 사회적 비용 (SCC) — {region}</div>
       <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, margin: '2px 0' }}>
-        {fmtFull(stat.value)}
-        <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink-secondary)', marginLeft: 6 }}>{unitLabel}</span>
+        {mainText}
+        <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink-secondary)', marginLeft: 6 }}>{mainUnit}</span>
       </div>
-      <div style={{ fontSize: 14, color: 'var(--ink-secondary)' }}>≈ ${usdText} USD</div>
+      <div style={{ fontSize: 14, color: 'var(--ink-secondary)' }}>{subText}</div>
 
       <div style={{ marginTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--ink-secondary)', marginBottom: 4 }}>
-          <span>5%: {fmtFull(stat.lo)}</span>
-          <span>95%: {fmtFull(stat.hi)}</span>
+          <span>5%: {rangeText(stat.lo)}</span>
+          <span>95%: {rangeText(stat.hi)}</span>
         </div>
         <div style={{ position: 'relative', height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #dbe7ff, var(--accent))' }}>
           <div style={{
