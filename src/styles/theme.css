@@ -57,6 +57,20 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); fo
 .section { padding: 28px 24px; border-bottom: 1px solid var(--border); }
 .section h2 { font-size: 17px; margin: 0 0 4px; }
 .section .section-note { font-size: 13px; color: var(--ink-secondary); margin: 0 0 16px; }
+.section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.section-head .section-note { margin-bottom: 12px; }
+
+.download-menu { position: relative; flex: none; }
+.download-menu .menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(29, 37, 48, 0.14); min-width: 168px; padding: 4px;
+}
+.download-menu .menu button {
+  display: block; width: 100%; text-align: left; border: 0; background: none;
+  padding: 8px 10px; font-size: 13px; color: var(--ink); border-radius: 6px; cursor: pointer;
+}
+.download-menu .menu button:hover { background: var(--surface); }
 .section-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
 .side-panel { display: flex; flex-direction: column; gap: 16px; }
 
