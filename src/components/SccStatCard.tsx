@@ -1,8 +1,38 @@
 'use client'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SccRow } from '@/lib/types'
 import type { FilterState } from '@/lib/filter'
 import { fmtFull } from '@/lib/format'
+
+/** 값이 바뀔 때 이전 값에서 새 값으로 부드럽게 굴러가는 숫자 (450ms ease-out) */
+function useAnimatedNumber(target: number, duration = 450): number {
+  const [display, setDisplay] = useState(target)
+  const displayRef = useRef(target)
+  const fromRef = useRef(target)
+
+  useEffect(() => {
+    const from = fromRef.current
+    if (from === target) return
+    let raf = 0
+    const t0 = performance.now()
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / duration)
+      const eased = 1 - Math.pow(1 - p, 3)
+      const v = from + (target - from) * eased
+      displayRef.current = v
+      setDisplay(v)
+      if (p < 1) raf = requestAnimationFrame(tick)
+      else fromRef.current = target
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      fromRef.current = displayRef.current // 중간에 끊기면 현재 위치에서 이어서
+    }
+  }, [target, duration])
+
+  return display
+}
 
 export interface FxInfo {
   rate: number
@@ -42,6 +72,11 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
     }
   }, [rows])
 
+  // 필터 변경 시 숫자·마커가 이전 값에서 굴러가도록 애니메이션 (훅 순서 유지를 위해 조기 반환 전에 호출)
+  const aValue = useAnimatedNumber(stat?.value ?? 0)
+  const aLo = useAnimatedNumber(stat?.lo ?? 0)
+  const aHi = useAnimatedNumber(stat?.hi ?? 0)
+
   if (!stat) return null
 
   const region = filter.region === 'KOR' ? '한국' : '전 세계'
@@ -50,11 +85,11 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
   const usdText = (v: number) =>
     toUsd(v).toLocaleString('en-US', { maximumFractionDigits: Math.abs(toUsd(v)) >= 100 ? 0 : 1 })
   // 주 숫자·범위는 선택 통화, 보조 줄은 반대 통화
-  const mainText = usdMode ? `$${usdText(stat.value)}` : fmtFull(stat.value)
+  const mainText = usdMode ? `$${usdText(aValue)}` : fmtFull(aValue)
   const mainUnit = usdMode ? 'USD/tCO₂' : unitLabel
-  const subText = usdMode ? `= ${fmtFull(stat.value)} ${unitLabel}` : `≈ $${usdText(stat.value)} USD`
+  const subText = usdMode ? `= ${fmtFull(aValue)} ${unitLabel}` : `≈ $${usdText(aValue)} USD`
   const rangeText = (v: number) => (usdMode ? `$${usdText(v)}` : fmtFull(v))
-  const pos = stat.hi > stat.lo ? Math.min(1, Math.max(0, (stat.value - stat.lo) / (stat.hi - stat.lo))) : 0.5
+  const pos = aHi > aLo ? Math.min(1, Math.max(0, (aValue - aLo) / (aHi - aLo))) : 0.5
 
   return (
     <div style={{
@@ -70,8 +105,8 @@ export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
 
       <div style={{ marginTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--ink-secondary)', marginBottom: 4 }}>
-          <span>5%: {rangeText(stat.lo)}</span>
-          <span>95%: {rangeText(stat.hi)}</span>
+          <span>5%: {rangeText(aLo)}</span>
+          <span>95%: {rangeText(aHi)}</span>
         </div>
         <div style={{ position: 'relative', height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #dbe7ff, var(--accent))' }}>
           <div style={{

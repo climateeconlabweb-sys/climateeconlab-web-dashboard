@@ -95,12 +95,14 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
                   onMouseMove={(e) =>
                     setTooltip({
                       x: e.clientX, y: e.clientY,
-                      lines: [
-                        `${r.model} · 기후민감도 ${r.ecs}℃ · 할인율 ${r.dr}%`,
-                        `평균 ${fmtFull(r.mean)}`,
-                        `p95 ${fmtFull(r.p95)} · p75 ${fmtFull(r.p75)}`,
-                        `중앙값(p50) ${fmtFull(r.p50)}`,
-                        `p25 ${fmtFull(r.p25)} · p05 ${fmtFull(r.p05)}`,
+                      title: `${r.model} · 기후민감도 ${r.ecs}℃ · 할인율 ${r.dr}%`,
+                      rows: [
+                        ['평균', fmtFull(r.mean)],
+                        ['p95', fmtFull(r.p95)],
+                        ['p75', fmtFull(r.p75)],
+                        ['중앙값(p50)', fmtFull(r.p50)],
+                        ['p25', fmtFull(r.p25)],
+                        ['p05', fmtFull(r.p05)],
                       ],
                     })
                   }

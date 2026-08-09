@@ -5,6 +5,7 @@ import SccStatCard, { type FxInfo } from '@/components/SccStatCard'
 import BoxPlotChart from '@/components/BoxPlotChart'
 import FanChart from '@/components/FanChart'
 import ChoroplethMap from '@/components/ChoroplethMap'
+import MapLegend from '@/components/MapLegend'
 import Histogram from '@/components/Histogram'
 import RegionTable from '@/components/RegionTable'
 import { quantileThresholds } from '@/lib/stats'
@@ -100,6 +101,7 @@ export default function Page() {
         <div className="section-body">
           <ChoroplethMap regional={regionalDisplay} unitLabel={damageUnit} />
           <div className="side-panel">
+            <MapLegend values={regionalValues} thresholds={regionalThresholds} />
             <Histogram values={regionalValues} thresholds={regionalThresholds} />
             <RegionTable regional={regionalDisplay} />
           </div>

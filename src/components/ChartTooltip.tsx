@@ -4,10 +4,12 @@ import { useLayoutEffect, useRef, useState } from 'react'
 export interface TooltipState {
   x: number
   y: number
-  lines: string[]
+  title: string
+  rows?: [string, string][]
+  note?: string
 }
 
-/** 공통 툴팁 (§5.3) — 실측 크기로 위치를 클램프해 화면 밖으로 나가지 않게 한다 */
+/** 공통 툴팁 (§5.3) — 라벨·값 2열 정렬, 실측 크기로 위치를 클램프해 화면 밖으로 나가지 않게 한다 */
 export default function ChartTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
@@ -36,9 +38,18 @@ export default function ChartTooltip({ tooltip }: { tooltip: TooltipState | null
       className="chart-tooltip"
       style={pos ? { left: pos.left, top: pos.top } : { left: -9999, top: -9999, visibility: 'hidden' }}
     >
-      {tooltip.lines.map((line, i) => (
-        <div key={i} style={i === 0 ? { fontWeight: 600, marginBottom: 2 } : undefined}>{line}</div>
-      ))}
+      <div className="tt-title">{tooltip.title}</div>
+      {tooltip.note && <div className="tt-note">{tooltip.note}</div>}
+      {tooltip.rows && tooltip.rows.length > 0 && (
+        <div className="tt-grid">
+          {tooltip.rows.map(([label, value], i) => (
+            <div className="tt-row" key={i}>
+              <span className="tt-label">{label}</span>
+              <span className="tt-value">{value}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

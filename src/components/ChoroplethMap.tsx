@@ -5,7 +5,7 @@ import { feature, mesh } from 'topojson-client'
 import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { Feature, Geometry } from 'geojson'
 import { quantileThresholds, binIndex, rankDesc } from '@/lib/stats'
-import { fmtCompact, fmtFull } from '@/lib/format'
+import { fmtFull } from '@/lib/format'
 import type { RegionalRow } from '@/lib/types'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
 
@@ -159,14 +159,17 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
             onMouseEnter={() => setHovered(code)}
             onMouseMove={(e) => {
               const name = row ? `${row.sidoNm} ${row.sigunguNm}` : f.properties.name
-              const lines = [name]
               if (row && row.value !== null) {
-                lines.push(`피해비용 ${fmtFull(row.value)} (${unitLabel})`)
-                lines.push(`전국 ${rankByCode.get(code)}위 / ${valued.length}곳`)
+                setTooltip({
+                  x: e.clientX, y: e.clientY, title: name,
+                  rows: [
+                    ['피해비용', `${fmtFull(row.value)} ${unitLabel}`],
+                    ['전국 순위', `${rankByCode.get(code)}위 / ${valued.length}곳`],
+                  ],
+                })
               } else {
-                lines.push('데이터 없음')
+                setTooltip({ x: e.clientX, y: e.clientY, title: name, note: '데이터 없음' })
               }
-              setTooltip({ x: e.clientX, y: e.clientY, lines })
             }}
           />
         )
@@ -274,22 +277,6 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
           </button>
         </div>
       )}
-
-      {/* 범례 (M-2) — 분위수 7구간 실제 경계값 표기 */}
-      <div className="legend" style={{ marginTop: 12 }}>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {Array.from({ length: 7 }, (_, i) => {
-            const lo = i === 0 ? Math.min(...valued.map((r) => r.value)) : thresholds[i - 1]
-            const hi = i === 6 ? Math.max(...valued.map((r) => r.value)) : thresholds[i]
-            return (
-              <div key={i} className="legend-row" style={{ marginRight: 8 }}>
-                <span className="swatch" style={{ background: `var(--map-${i + 1})` }} />
-                <span>{fmtCompact(lo)}~{fmtCompact(hi)}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
 
       <ChartTooltip tooltip={tooltip} />
     </div>

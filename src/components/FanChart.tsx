@@ -100,21 +100,21 @@ export default function FanChart({ rows, comboCount, startYear, onStartYearChang
     const year = Math.min(2100, Math.max(startYear, Math.round(rawYear / 5) * 5))
     if (!YEARS.includes(year)) return
     setHoverYear(year)
-    const lines: string[] = [`${year}년`]
+    const rows: [string, string][] = []
     if (individual) {
       combos.forEach((c) => {
         const p = c.points.find((d) => d.year === year)
-        if (p) lines.push(`${c.model} ${c.ecs}℃ ${c.dr}%: 평균 ${fmtFull(p.mean)} (p05 ${fmtFull(p.p05)} ~ p95 ${fmtFull(p.p95)})`)
+        if (p) rows.push([`${c.model} · ${c.ecs}℃ · ${c.dr}%`, `${fmtFull(p.mean)} (${fmtFull(p.p05)} ~ ${fmtFull(p.p95)})`])
       })
     } else {
       const s = summary.find((d) => d.year === year)
       if (s) {
-        lines.push(`평균값들의 중앙값 ${fmtFull(s.medianMean)}`)
-        lines.push(`조건 간 평균 범위 ${fmtFull(s.meanMin)} ~ ${fmtFull(s.meanMax)}`)
-        lines.push(`전체 p05~p95 ${fmtFull(s.envLo)} ~ ${fmtFull(s.envHi)}`)
+        rows.push(['평균값들의 중앙값', fmtFull(s.medianMean)])
+        rows.push(['조건 간 평균 범위', `${fmtFull(s.meanMin)} ~ ${fmtFull(s.meanMax)}`])
+        rows.push(['전체 p05~p95', `${fmtFull(s.envLo)} ~ ${fmtFull(s.envHi)}`])
       }
     }
-    setTooltip({ x: e.clientX, y: e.clientY, lines })
+    setTooltip({ x: e.clientX, y: e.clientY, title: `${year}년`, rows })
   }
 
   return (
