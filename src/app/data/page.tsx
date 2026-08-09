@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import TopNav from '@/components/TopNav'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
 import { UNIT_CONFIG } from '@/data/config'
 import { fmtFull } from '@/lib/format'
@@ -111,13 +112,7 @@ export default function DataPage() {
 
   return (
     <main>
-      <nav className="top-nav">
-        <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
-        <a href="/">데이터 보기</a>
-        <a href="/model">모형 설명</a>
-        <a href="/samples">데이터 샘플 보기</a>
-        <a href="/data" className="active">샘플 데이터</a>
-      </nav>
+      <TopNav active="/data" />
 
       <section className="section">
         <h2>샘플 데이터</h2>

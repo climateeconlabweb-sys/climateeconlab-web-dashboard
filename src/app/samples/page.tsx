@@ -1,4 +1,5 @@
 'use client'
+import TopNav from '@/components/TopNav'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
 import { UNIT_CONFIG } from '@/data/config'
 import dataset from '@/data/dataset.json'
@@ -7,7 +8,7 @@ import {
   DotPlot, MedianBars, ModelCards,
   ModelMedianLines, ModelSmallMultiples, YearConditionHeatmap, EndpointSlope, SparklineTable,
   TopRegionsBar,
-} from './charts'
+} from '@/components/analysis-charts'
 
 const data = dataset as unknown as {
   korScc: SccRow[]
@@ -57,13 +58,7 @@ export default function SamplesPage() {
 
   return (
     <main>
-      <nav className="top-nav">
-        <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
-        <a href="/">데이터 보기</a>
-        <a href="/model">모형 설명</a>
-        <a href="/samples" className="active">데이터 샘플 보기</a>
-        <a href="/data">샘플 데이터</a>
-      </nav>
+      <TopNav active="/samples" />
 
       <section className="section">
         <h2>데이터 샘플 보기</h2>

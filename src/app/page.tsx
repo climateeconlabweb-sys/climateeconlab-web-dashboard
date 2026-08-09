@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import TopNav from '@/components/TopNav'
 import FilterBar from '@/components/FilterBar'
 import SccStatCard, { type FxInfo } from '@/components/SccStatCard'
 import BoxPlotChart from '@/components/BoxPlotChart'
@@ -59,13 +60,7 @@ export default function Page() {
 
   return (
     <main>
-      <nav className="top-nav">
-        <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
-        <a href="/" className="active">데이터 보기</a>
-        <a href="/model">모형 설명</a>
-        <a href="/samples">데이터 샘플 보기</a>
-        <a href="/data">샘플 데이터</a>
-      </nav>
+      <TopNav active="/" />
 
       <FilterBar value={filter} onChange={setFilter} />
 

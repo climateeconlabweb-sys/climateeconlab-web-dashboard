@@ -1,4 +1,5 @@
 import { contentStore } from '@/lib/content'
+import TopNav from '@/components/TopNav'
 import ModelArticle from '@/components/ModelArticle'
 
 export const dynamic = 'force-dynamic'
@@ -10,13 +11,7 @@ export default async function ModelPage() {
 
   return (
     <main>
-      <nav className="top-nav">
-        <span className="brand">한국형 앙상블 기후변화통합평가모형</span>
-        <a href="/">데이터 보기</a>
-        <a href="/model" className="active">모형 설명</a>
-        <a href="/samples">데이터 샘플 보기</a>
-        <a href="/data">샘플 데이터</a>
-      </nav>
+      <TopNav active="/model" />
       <section className="section" style={{ maxWidth: 860, margin: '0 auto' }}>
         {html ? (
           <ModelArticle html={html} />
