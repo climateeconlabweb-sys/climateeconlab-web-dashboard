@@ -340,36 +340,54 @@ export function ModelSmallMultiples({ rows }: { rows: DamageRow[] }) {
   )
 }
 
-/* ── 10. 연도×조건 히트맵: 색 = 평균 ──────────────────────────────── */
+/* ── 10. 연도×조건 히트맵: 색 = 평균 — 모형명은 그룹당 1회, 좁은 화면은 가로 스크롤 ── */
 export function YearConditionHeatmap({ rows }: { rows: DamageRow[] }) {
   const combos = [...new Map(rows.map((r) => [comboLabel(r), r])).values()].sort(modelOrder)
   const thresholds = quantileThresholds(rows.map((r) => r.mean), 7)
-  const RH = 14, ML = 150, MT = 22, MR = 8
+  const RH = 15, ML = 122, MT = 22, MR = 8
   const CW = (W - ML - MR) / YEARS.length
   const H = MT + combos.length * RH + 6
   const cell = new Map(rows.map((r) => [`${comboLabel(r)}|${r.year}`, r.mean]))
+  const groups = MODELS.map((m) => {
+    const idxs = combos.map((c, i) => [c, i] as const).filter(([c]) => c.model === m).map(([, i]) => i)
+    return idxs.length ? { m, start: idxs[0], end: idxs[idxs.length - 1] } : null
+  }).filter(Boolean) as { m: Model; start: number; end: number }[]
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
-      {YEARS.map((yr, i) =>
-        i % 2 === 0 ? (
-          <text key={yr} x={ML + i * CW + CW / 2} y={14} textAnchor="middle" fontSize={9.5} fill="var(--ink-secondary)">{yr}</text>
-        ) : null,
-      )}
-      {combos.map((r, ri) => (
-        <g key={comboLabel(r)}>
-          <text x={ML - 6} y={MT + ri * RH + RH / 2} dy="0.32em" textAnchor="end" fontSize={9} fill="var(--ink-secondary)">{comboLabel(r)}</text>
-          {YEARS.map((yr, ci) => {
-            const v = cell.get(`${comboLabel(r)}|${yr}`)
-            if (v === undefined) return null
-            return (
-              <rect key={yr} x={ML + ci * CW} y={MT + ri * RH} width={CW - 1} height={RH - 1} fill={`var(--map-${binIndex(v, thresholds) + 1})`}>
-                <title>{`${comboLabel(r)} · ${yr}년 · ${fmtFull(v)}`}</title>
-              </rect>
-            )
-          })}
-        </g>
-      ))}
-    </svg>
+    <div style={{ overflowX: 'auto' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ minWidth: 680, width: '100%', height: 'auto', display: 'block' }}>
+        {YEARS.map((yr, i) =>
+          i % 2 === 0 ? (
+            <text key={yr} x={ML + i * CW + CW / 2} y={14} textAnchor="middle" fontSize={10.5} fill="var(--ink-secondary)">{yr}</text>
+          ) : null,
+        )}
+        {/* 모형 그룹 라벨 + 구분선 */}
+        {groups.map((g) => (
+          <g key={g.m}>
+            {g.start > 0 && <line x1={0} x2={W - MR} y1={MT + g.start * RH - 0.5} y2={MT + g.start * RH - 0.5} stroke="var(--border)" />}
+            <text
+              x={8} y={MT + ((g.start + g.end + 1) / 2) * RH}
+              dy="0.32em" fontSize={11.5} fontWeight={700} fill={MODEL_COLOR[g.m]}
+            >
+              {g.m}
+            </text>
+          </g>
+        ))}
+        {combos.map((r, ri) => (
+          <g key={comboLabel(r)}>
+            <text x={ML - 8} y={MT + ri * RH + RH / 2} dy="0.32em" textAnchor="end" fontSize={10.5} fill="var(--ink-secondary)">
+              {r.ecs}℃ {r.dr}%
+            </text>
+            {YEARS.map((yr, ci) => {
+              const v = cell.get(`${comboLabel(r)}|${yr}`)
+              if (v === undefined) return null
+              return (
+                <rect key={yr} x={ML + ci * CW} y={MT + ri * RH} width={CW - 1} height={RH - 1} fill={`var(--map-${binIndex(v, thresholds) + 1})`} />
+              )
+            })}
+          </g>
+        ))}
+      </svg>
+    </div>
   )
 }
 
