@@ -120,7 +120,7 @@ export default function SamplesPage() {
 
         <Sample no={10} title="연도×조건 히트맵" badge="partial"
           dataUsed={`조건·연도별 평균 (${damageUnit}) — 색이 진할수록 큰 값`}>
-          <YearConditionHeatmap rows={damage} />
+          <YearConditionHeatmap rows={damage} unitLabel={damageUnit} />
         </Sample>
 
         <Sample no={11} title="2025→2100 기울기 차트" badge="partial"

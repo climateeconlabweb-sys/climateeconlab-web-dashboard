@@ -1,5 +1,7 @@
 'use client'
+import { useState } from 'react'
 import { scaleBand, scaleLinear, scalePoint } from 'd3-scale'
+import ChartTooltip, { type TooltipState } from './ChartTooltip'
 import { line, area, curveMonotoneX } from 'd3-shape'
 import { MODELS, ECS_VALUES, DR_VALUES, YEARS, type SccRow, type DamageRow, type RegionalRow, type Model } from '@/lib/types'
 import { summarizeByYear } from '@/lib/stats'
@@ -340,11 +342,12 @@ export function ModelSmallMultiples({ rows }: { rows: DamageRow[] }) {
   )
 }
 
-/* ── 10. 연도×조건 히트맵: 색 = 평균 — 모형명은 그룹당 1회, 좁은 화면은 가로 스크롤 ── */
-export function YearConditionHeatmap({ rows }: { rows: DamageRow[] }) {
+/* ── 10. 연도×조건 히트맵: 색 = 평균 — Y축은 모형│민감도│할인율 3단, 좁은 화면은 가로 스크롤 ── */
+export function YearConditionHeatmap({ rows, unitLabel = '' }: { rows: DamageRow[]; unitLabel?: string }) {
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const combos = [...new Map(rows.map((r) => [comboLabel(r), r])).values()].sort(modelOrder)
   const thresholds = quantileThresholds(rows.map((r) => r.mean), 7)
-  const RH = 15, ML = 122, MT = 22, MR = 8
+  const RH = 15, ML = 134, MT = 22, MR = 8
   const CW = (W - ML - MR) / YEARS.length
   const H = MT + combos.length * RH + 6
   const cell = new Map(rows.map((r) => [`${comboLabel(r)}|${r.year}`, r.mean]))
@@ -352,9 +355,26 @@ export function YearConditionHeatmap({ rows }: { rows: DamageRow[] }) {
     const idxs = combos.map((c, i) => [c, i] as const).filter(([c]) => c.model === m).map(([, i]) => i)
     return idxs.length ? { m, start: idxs[0], end: idxs[idxs.length - 1] } : null
   }).filter(Boolean) as { m: Model; start: number; end: number }[]
+  // 모형 안에서 기후민감도 소그룹 (연속 구간)
+  const ecsGroups: { key: string; ecs: number; start: number; end: number }[] = []
+  combos.forEach((c, i) => {
+    const last = ecsGroups[ecsGroups.length - 1]
+    if (last && last.key === `${c.model}|${c.ecs}`) last.end = i
+    else ecsGroups.push({ key: `${c.model}|${c.ecs}`, ecs: c.ecs, start: i, end: i })
+  })
   return (
     <div style={{ overflowX: 'auto' }}>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ minWidth: 680, width: '100%', height: 'auto', display: 'block' }}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ minWidth: 680, width: '100%', height: 'auto', display: 'block' }}
+        onMouseLeave={() => setTooltip(null)}
+      >
+        {/* Y축 열 이름 */}
+        <g fontSize={9} fill="var(--ink-muted)">
+          <text x={8} y={14}>모형</text>
+          <text x={96} y={14} textAnchor="end">민감도</text>
+          <text x={ML - 8} y={14} textAnchor="end">할인율</text>
+        </g>
         {YEARS.map((yr, i) =>
           i % 2 === 0 ? (
             <text key={yr} x={ML + i * CW + CW / 2} y={14} textAnchor="middle" fontSize={10.5} fill="var(--ink-secondary)">{yr}</text>
@@ -372,21 +392,44 @@ export function YearConditionHeatmap({ rows }: { rows: DamageRow[] }) {
             </text>
           </g>
         ))}
+        {/* 기후민감도 소그룹 라벨 + 옅은 구분선 */}
+        {ecsGroups.map((g) => (
+          <g key={g.key}>
+            {g.start > 0 && (
+              <line x1={62} x2={W - MR} y1={MT + g.start * RH - 0.5} y2={MT + g.start * RH - 0.5} stroke="var(--chart-grid)" />
+            )}
+            <text x={96} y={MT + ((g.start + g.end + 1) / 2) * RH} dy="0.32em" textAnchor="end" fontSize={10.5} fill="var(--ink-secondary)">
+              {g.ecs}℃
+            </text>
+          </g>
+        ))}
         {combos.map((r, ri) => (
           <g key={comboLabel(r)}>
             <text x={ML - 8} y={MT + ri * RH + RH / 2} dy="0.32em" textAnchor="end" fontSize={10.5} fill="var(--ink-secondary)">
-              {r.ecs}℃ {r.dr}%
+              {r.dr}%
             </text>
             {YEARS.map((yr, ci) => {
               const v = cell.get(`${comboLabel(r)}|${yr}`)
               if (v === undefined) return null
               return (
-                <rect key={yr} x={ML + ci * CW} y={MT + ri * RH} width={CW - 1} height={RH - 1} fill={`var(--map-${binIndex(v, thresholds) + 1})`} />
+                <rect
+                  key={yr}
+                  x={ML + ci * CW} y={MT + ri * RH} width={CW - 1} height={RH - 1}
+                  fill={`var(--map-${binIndex(v, thresholds) + 1})`}
+                  onMouseMove={(e) =>
+                    setTooltip({
+                      x: e.clientX, y: e.clientY,
+                      title: `${r.model} · 기후민감도 ${r.ecs}℃ · 할인율 ${r.dr}%`,
+                      rows: [[`${yr}년 평균`, `${fmtFull(v)}${unitLabel ? ` ${unitLabel}` : ''}`]],
+                    })
+                  }
+                />
               )
             })}
           </g>
         ))}
       </svg>
+      <ChartTooltip tooltip={tooltip} />
     </div>
   )
 }

@@ -71,8 +71,8 @@ export default function DamagePage() {
               <ModelSmallMultiples rows={display} />
             </Section>
 
-            <Section title="연도×조건 히트맵" note={`조건·연도별 평균 (${unit}) · 색이 진할수록 큰 값`}>
-              <YearConditionHeatmap rows={display} />
+            <Section title="연도×조건 히트맵" note={`조건·연도별 평균 (${unit}) · 색이 진할수록 큰 값 · 칸에 마우스를 올리면 값 표시`}>
+              <YearConditionHeatmap rows={display} unitLabel={unit} />
             </Section>
 
             <Section title="2025년과 2100년 비교" note={`조건별 2025년·2100년 평균 두 시점 연결 (${unit})`}>
