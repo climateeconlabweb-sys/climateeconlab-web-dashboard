@@ -23,7 +23,7 @@ export interface FxInfo { rate: number; asOf: string | null; isFallback: boolean
 
 /** 빌드 시점에 구글 시트에서 만들어 두는 데이터 파일 (src/data/dataset.json) */
 export interface Snapshot extends Dataset {
-  /** 이 데이터를 시트에서 읽어온 시각 (ISO) — 화면에 "데이터 기준"으로 표시 */
+  /** 이 데이터를 시트에서 읽어온 시각 (ISO). 화면에는 띄우지 않고 점검용으로만 둔다 */
   generatedAt: string
   fx: FxInfo
 }

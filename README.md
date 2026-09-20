@@ -14,7 +14,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - 워크플로: `.github/workflows/deploy.yml` (`main` push · 15분 주기 · 수동 실행)
 - 실제 반영까지 **10~30분** 소요 (GitHub 스케줄은 혼잡 시 지연된다). 급하면 Actions 탭에서 수동 실행.
 - 서비스 계정 키는 Secrets에만 있고 산출물(`out/`)에는 들어가지 않는다 — 워크플로가 매번 검사한다.
-- 화면 오른쪽 위 "데이터 기준 …" 표시가 그 페이지 데이터가 언제 것인지 알려준다.
+- 데이터가 언제 것인지는 화면에 띄우지 않는다. 확인이 필요하면 `src/data/dataset.json`의
+  `generatedAt`(시트를 읽어온 시각)이나 Actions 탭의 마지막 성공 실행 시각을 본다.
 
 정적 배포라 **서버가 필요한 기능은 빠진다**: API 라우트, 커스텀 CSP 헤더, 방문 슬랙 알림(제거됨).
 `/admin` CMS와 환율 조회는 로컬·빌드 시점에서만 동작한다(아래 참고).
