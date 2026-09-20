@@ -1,15 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 한국형 앙상블 기후변화통합평가모형 대시보드
 
-## 배포 구조 (GitHub Pages)
+기후변화로 생기는 **피해비용**과 **탄소의 사회적 비용(SCC)** 을 일반 이용자가
+직접 조건을 바꿔가며 살펴볼 수 있게 만든 웹 대시보드다.
+climateeconlab.com(아임웹) 페이지에 iframe으로 삽입해 서비스한다.
 
-정적 사이트로 `https://climateeconlabweb-sys.github.io/climateeconlab-web-dashboard/` 에 배포한다. 서버가 없으므로
-**데이터는 빌드 시점에 확정**되고, GitHub Actions가 주기적으로 다시 빌드해 최신 시트 내용을 반영한다.
+- 서비스 주소: <https://climateeconlabweb-sys.github.io/climateeconlab-web-dashboard/>
+- 삽입 방법: `docs/imweb-embed.md`
+
+## 무엇을 보여주는가
+
+**SCC(탄소의 사회적 비용)** 는 이산화탄소 1톤을 더 배출했을 때 사회가 치르는 비용,
+**피해비용**은 기후변화로 해당 연도에 발생하는 총 피해액이다.
+두 값 모두 하나의 숫자로 딱 떨어지지 않고, 어떤 모형·가정을 쓰느냐에 따라 크게 달라진다.
+그래서 이 대시보드는 **여러 조건의 결과를 한꺼번에 보여주는 것**을 목적으로 한다.
+
+이용자가 고를 수 있는 조건은 네 가지다.
+
+| 조건 | 선택지 | 의미 |
+| --- | --- | --- |
+| 지역 | 한국 / 전 세계 | 피해를 집계하는 범위 |
+| 모형 | FUND · RICE · WITCH · PAGE | 국제적으로 널리 쓰이는 통합평가모형 4종 |
+| 기후민감도(ECS) | 2.6 / 3.3 / 4.1 ℃ | CO₂가 두 배가 될 때 오르는 기온. 클수록 피해가 크다 |
+| 할인율(DR) | 2 / 2.5 / 3 % | 미래의 피해를 현재 가치로 환산하는 비율. 낮을수록 미래를 무겁게 본다 |
+
+모형·기후민감도·할인율은 "전체"로 둘 수 있고, 그러면 최대 36개 조합의 분포가
+한 화면에 겹쳐 보인다. 대표값은 **중앙값(p50)** 을 쓰고, 불확실성은 5·25·75·95 백분위수
+구간으로 함께 표시한다. 화폐 단위는 원(만 원)과 달러를 토글할 수 있다.
+
+## 화면 구성
+
+| 경로 | 화면 | 내용 |
+| --- | --- | --- |
+| `/` | 데이터 보기 | SCC 요약값·상자그림, 연도별 피해비용 팬차트, 시군구 단계구분도, 지역 분포 히스토그램·표 |
+| `/damage` | 피해비용 분석 | 모형별 추세선, 스몰멀티플, 연도×조건 히트맵, 구간별 증가율 등 다각도 시각화 |
+| `/model` | 모형 설명 | 연구소가 작성한 모형 소개 원고 |
+| `/samples` | 데이터 샘플 보기 | 같은 데이터를 어떤 차트로 표현할 수 있는지 모아 본 카탈로그 |
+| `/data` | 샘플 데이터 | 원자료를 표로 확인 (전 세계·한국 SCC, 피해비용, 지역별) |
+
+모든 차트는 PNG 이미지와 엑셀 파일로 내려받을 수 있다.
+연도 축은 2025년부터 2100년까지 5년 간격이다.
+
+## 데이터가 흘러오는 길
+
+수치는 연구소가 관리하는 **구글 시트**에 있고, 사이트는 그 시트를 읽어 만든다.
 
 ```
 구글 시트(비공개) ──┐
                    ├─ GitHub Actions (15분마다) ─ npm run convert ─ next build ─ Pages 배포
 서비스 계정 키(Secrets)┘
 ```
+
+연구소가 시트 숫자를 고치면 별도 작업 없이 다음 빌드에 반영된다.
+자세한 교체 절차는 `docs/data-update.md`에 있다.
+
+---
+
+아래는 이 저장소를 직접 만지는 사람을 위한 운영 메모다.
+
+## 배포 구조 (GitHub Pages)
+
+정적 사이트라 서버가 없으므로 **데이터는 빌드 시점에 확정**되고,
+GitHub Actions가 주기적으로 다시 빌드해 최신 시트 내용을 반영한다.
 
 - 워크플로: `.github/workflows/deploy.yml` (`main` push · 15분 주기 · 수동 실행)
 - 실제 반영까지 **10~30분** 소요 (GitHub 스케줄은 혼잡 시 지연된다). 급하면 Actions 탭에서 수동 실행.
@@ -84,6 +135,8 @@ npm run convert -- xlsx  # data-source/ 의 엑셀 파일에서 갱신 (시트 �
 
 ## 로컬 개발
 
+Next.js(App Router) + React + D3 기반이다.
+
 ```bash
 npm run dev          # http://localhost:3000 — 서버 모드라 /admin CMS도 동작한다
 npm test             # 유닛 테스트
@@ -114,7 +167,8 @@ git config user.email "329795782+climateeconlabweb-sys@users.noreply.github.com"
 	path = ~/.gitconfig-climateeconlab
 ```
 
-## Learn More
+## 더 보기
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- 이 저장소의 상세 문서: `docs/` (데이터 교체 절차, 아임웹 임베드, 검수 결과)
+- 데이터 교체 절차: `docs/data-update.md`
+- 아임웹 임베드: `docs/imweb-embed.md`
+- 검수 결과: `docs/acceptance-check.md`
