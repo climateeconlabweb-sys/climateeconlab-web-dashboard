@@ -6,7 +6,10 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '*/15 * * * *'   # 15분마다 시트 변경 반영 (실제 실행은 더 늦어질 수 있음)
+    # 5분 간격 (GitHub이 허용하는 최소). 정각·정시 5분 단위는 전 세계 워크플로가 몰려
+    # 지연이 커지므로 3분씩 밀어 배치한다 — 3,8,13,…,58분.
+    # 실제 시작은 GitHub 부하에 따라 수 분 늦어질 수 있고, 혼잡하면 건너뛸 수도 있다.
+    - cron: '3-59/5 * * * *'
   workflow_dispatch:          # Actions 탭에서 수동 실행
 
 permissions:
