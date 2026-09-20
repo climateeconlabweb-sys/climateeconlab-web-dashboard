@@ -63,13 +63,13 @@ export default function SamplesPage() {
 
         <h3 style={{ margin: '20px 0 12px' }}>A. SCC — 박스플롯의 대안</h3>
 
-        <Sample no={1} title="덤벨 차트 (구간 + 평균점, 값 정렬)" badge="full"
-          dataUsed={`조건별 p05·p95 구간과 평균 (${sccUnit})`}>
+        <Sample no={1} title="덤벨 차트 (구간 + 중앙값점, 값 정렬)" badge="full"
+          dataUsed={`조건별 p05·p95 구간과 중앙값 (${sccUnit})`}>
           <DumbbellChart rows={scc} />
         </Sample>
 
         <Sample no={2} title="오차 막대 막대그래프" badge="full"
-          dataUsed={`조건별 평균(막대)과 p05~p95(수염) (${sccUnit})`}>
+          dataUsed={`조건별 중앙값(막대)과 p05~p95(수염) (${sccUnit})`}>
           <ErrorBarChart rows={scc} />
         </Sample>
 
@@ -78,8 +78,8 @@ export default function SamplesPage() {
           <SccHeatmap rows={scc} />
         </Sample>
 
-        <Sample no={4} title="민감도 기울기 차트 (할인율별 패널)" badge="partial"
-          dataUsed={`조건별 평균 (${sccUnit}) — 기후민감도 축에 따른 변화`}>
+        <Sample no={4} title="민감도 기울기 차트 (할인율별 패널)" badge="median"
+          dataUsed={`조건별 중앙값(p50) (${sccUnit}) — 기후민감도 축에 따른 변화`}>
           <SlopeSensitivity rows={scc} />
         </Sample>
 

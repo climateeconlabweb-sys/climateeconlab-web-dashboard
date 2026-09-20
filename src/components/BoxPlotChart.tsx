@@ -4,7 +4,6 @@ import { scaleBand, scaleLinear } from 'd3-scale'
 import { MODELS, type SccRow, type Model } from '@/lib/types'
 import { fmtCompact, fmtFull } from '@/lib/format'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
-import { statExtent } from '@/lib/stats'
 
 const MODEL_COLOR: Record<Model, string> = {
   FUND: 'var(--model-fund)',
@@ -47,7 +46,10 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
   const keys = sorted.map(rowKey)
 
   const x = scaleBand<string>().domain(keys).range([0, innerW]).paddingInner(0.35).paddingOuter(0.2)
-  const y = scaleLinear().domain(statExtent(sorted)).nice().range([innerH, 0])
+  // 축은 분포(p05~p95)만 따른다 — 평균은 마커로 그리지 않고 툴팁에서 확인한다
+  const y = scaleLinear()
+    .domain([Math.min(...sorted.map((r) => r.p05)), Math.max(...sorted.map((r) => r.p95))])
+    .nice().range([innerH, 0])
   const ticks = y.ticks(6)
 
   // 모형 그룹 라벨 위치 (S-2)
@@ -119,11 +121,6 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
                   />
                   {/* 중앙선 p50 */}
                   <line x1={x(key)} x2={x(key)! + bw} y1={y(r.p50)} y2={y(r.p50)} stroke={color} strokeWidth={2} />
-                  {/* 평균 ◆ 마커 */}
-                  <path
-                    d={`M ${cx} ${y(r.mean) - 4} l 4 4 l -4 4 l -4 -4 Z`}
-                    fill="var(--ink)" stroke="var(--bg)" strokeWidth={0.8}
-                  />
                 </g>
               )
             })}
@@ -170,12 +167,6 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
               <line x1={7} x2={15} y1={14} y2={14} stroke="var(--accent)" strokeWidth={1.4} />
             </svg>
             <span>수염 = 5~95 백분위수</span>
-          </div>
-          <div className="legend-row">
-            <svg width={22} height={16}>
-              <path d="M 11 3 l 5 5 l -5 5 l -5 -5 Z" fill="var(--ink)" />
-            </svg>
-            <span>평균(mean)</span>
           </div>
         </div>
       </div>

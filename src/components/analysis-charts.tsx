@@ -4,7 +4,7 @@ import { scaleBand, scaleLinear, scalePoint } from 'd3-scale'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
 import { line, area, curveMonotoneX } from 'd3-shape'
 import { MODELS, ECS_VALUES, DR_VALUES, YEARS, type SccRow, type DamageRow, type RegionalRow, type Model } from '@/lib/types'
-import { summarizeByYear, quantileThresholds, binIndex, statExtent } from '@/lib/stats'
+import { summarizeByYear, quantileThresholds, binIndex } from '@/lib/stats'
 import { fmtCompact, fmtFull } from '@/lib/format'
 
 export const MODEL_COLOR: Record<Model, string> = {
@@ -27,13 +27,13 @@ const modelOrder = (r: { model: Model; ecs: number; dr: number }, s: { model: Mo
 
 const W = 920
 
-/* ── 1. 덤벨 차트: p05~p95 구간 + 평균점, 값 정렬 ─────────────────── */
+/* ── 1. 덤벨 차트: p05~p95 구간 + 중앙값점, 값 정렬 ────────────────── */
 export function DumbbellChart({ rows }: { rows: SccRow[] }) {
-  const sorted = [...rows].sort((a, b) => b.mean - a.mean)
+  const sorted = [...rows].sort((a, b) => b.p50 - a.p50)
   const RH = 15, ML = 150, MR = 24, MT = 6, MB = 30
   const H = MT + MB + sorted.length * RH
   const x = scaleLinear()
-    .domain(statExtent(rows))
+    .domain([Math.min(...rows.map((r) => r.p05)), Math.max(...rows.map((r) => r.p95))])
     .nice()
     .range([ML, W - MR])
   return (
@@ -51,7 +51,7 @@ export function DumbbellChart({ rows }: { rows: SccRow[] }) {
           <g key={comboLabel(r)}>
             <text x={ML - 8} y={cy} dy="0.32em" textAnchor="end" fontSize={9.5} fill="var(--ink-secondary)">{comboLabel(r)}</text>
             <line x1={x(r.p05)} x2={x(r.p95)} y1={cy} y2={cy} stroke={c} strokeWidth={1.8} opacity={0.5} />
-            <circle cx={x(r.mean)} cy={cy} r={3.2} fill={c} />
+            <circle cx={x(r.p50)} cy={cy} r={3.2} fill={c} />
           </g>
         )
       })}
@@ -59,13 +59,15 @@ export function DumbbellChart({ rows }: { rows: SccRow[] }) {
   )
 }
 
-/* ── 2. 오차 막대 막대그래프: 평균 막대 + p05~p95 수염 ─────────────── */
+/* ── 2. 오차 막대 막대그래프: 중앙값 막대 + p05~p95 수염 ───────────── */
 export function ErrorBarChart({ rows }: { rows: SccRow[] }) {
   const sorted = [...rows].sort(modelOrder)
   const H = 340, ML = 56, MR = 12, MT = 10, MB = 40
   const keys = sorted.map(comboLabel)
   const x = scaleBand<string>().domain(keys).range([ML, W - MR]).paddingInner(0.35)
-  const y = scaleLinear().domain(statExtent(sorted, true)).nice().range([H - MB, MT])
+  const y = scaleLinear()
+    .domain([Math.min(0, ...sorted.map((r) => r.p05)), Math.max(0, ...sorted.map((r) => r.p95))])
+    .nice().range([H - MB, MT])
   const bw = x.bandwidth()
   const groups = MODELS.filter((m) => sorted.some((r) => r.model === m)).map((m) => {
     const xs = sorted.filter((r) => r.model === m).map((r) => x(comboLabel(r))! + bw / 2)
@@ -85,7 +87,7 @@ export function ErrorBarChart({ rows }: { rows: SccRow[] }) {
         const cx = bx + bw / 2
         return (
           <g key={comboLabel(r)}>
-            <rect x={bx} y={Math.min(y(0), y(r.mean))} width={bw} height={Math.abs(y(r.mean) - y(0))} fill={c} fillOpacity={0.55} rx={2} />
+            <rect x={bx} y={Math.min(y(0), y(r.p50))} width={bw} height={Math.abs(y(r.p50) - y(0))} fill={c} fillOpacity={0.55} rx={2} />
             <line x1={cx} x2={cx} y1={y(r.p05)} y2={y(r.p95)} stroke={c} strokeWidth={1.4} />
             <line x1={cx - bw / 4} x2={cx + bw / 4} y1={y(r.p05)} y2={y(r.p05)} stroke={c} strokeWidth={1.4} />
             <line x1={cx - bw / 4} x2={cx + bw / 4} y1={y(r.p95)} y2={y(r.p95)} stroke={c} strokeWidth={1.4} />
@@ -146,12 +148,12 @@ export function SccHeatmap({ rows }: { rows: SccRow[] }) {
   )
 }
 
-/* ── 4. 민감도 기울기 차트: 기후민감도에 따른 평균 변화, 할인율별 패널 ─ */
+/* ── 4. 민감도 기울기 차트: 기후민감도에 따른 중앙값 변화, 할인율별 패널 ─ */
 export function SlopeSensitivity({ rows }: { rows: SccRow[] }) {
   const FW = 280, H = 260, ML = 48, MT = 30, MB = 34
-  // 평균만 그리는 차트 — 평균이 전부 음수여도 축이 뒤집히지 않도록 0을 함께 포함한다
-  const means = rows.map((r) => r.mean)
-  const y = scaleLinear().domain([Math.min(0, ...means), Math.max(0, ...means)]).nice().range([H - MB, MT])
+  // 0을 함께 포함해 값이 전부 음수여도 축이 뒤집히지 않게 한다
+  const mids = rows.map((r) => r.p50)
+  const y = scaleLinear().domain([Math.min(0, ...mids), Math.max(0, ...mids)]).nice().range([H - MB, MT])
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {DR_VALUES.map((d) => {
@@ -176,10 +178,10 @@ export function SlopeSensitivity({ rows }: { rows: SccRow[] }) {
               return (
                 <g key={m}>
                   <path
-                    d={line<SccRow>().x((r) => x(r.ecs)!).y((r) => y(r.mean))(pts) ?? undefined}
+                    d={line<SccRow>().x((r) => x(r.ecs)!).y((r) => y(r.p50))(pts) ?? undefined}
                     fill="none" stroke={MODEL_COLOR[m]} strokeWidth={2}
                   />
-                  {pts.map((r) => <circle key={r.ecs} cx={x(r.ecs)} cy={y(r.mean)} r={3} fill={MODEL_COLOR[m]} />)}
+                  {pts.map((r) => <circle key={r.ecs} cx={x(r.ecs)} cy={y(r.p50)} r={3} fill={MODEL_COLOR[m]} />)}
                 </g>
               )
             })}

@@ -47,28 +47,32 @@ interface Props {
   unitLabel: string
 }
 
-/** SCC 대표값 카드 — 단일 조건이면 그 조건의 평균, 복수 조합이면 조건별 평균값들의 중앙값 */
+/**
+ * SCC 대표값 카드 — 단일 조건이면 그 조건의 중앙값, 복수 조합이면 조건별 중앙값들의 중앙값.
+ * 평균이 아니라 중앙값(p50)을 쓰는 이유: 원자료의 mean 열이 분포(p05~p95) 밖에 놓이는 경우가 있어
+ * 대표값으로 신뢰하기 어렵다. 평균값 자체는 차트 툴팁과 '샘플 데이터' 표에 그대로 남겨 둔다.
+ */
 export default function SccStatCard({ rows, filter, fx, unitLabel }: Props) {
   const stat = useMemo(() => {
     if (rows.length === 0) return null
     if (rows.length === 1) {
       const r = rows[0]
       return {
-        value: r.mean,
+        value: r.p50,
         lo: r.p05,
         hi: r.p95,
-        caption: `${r.model} · 기후민감도 ${r.ecs}℃ · 할인율 ${r.dr}% · 평균 기준`,
+        caption: `${r.model} · 기후민감도 ${r.ecs}℃ · 할인율 ${r.dr}% · 중앙값(p50) 기준`,
       }
     }
-    const means = [...rows.map((r) => r.mean)].sort((a, b) => a - b)
-    const mid = means.length % 2
-      ? means[(means.length - 1) / 2]
-      : (means[means.length / 2 - 1] + means[means.length / 2]) / 2
+    const medians = [...rows.map((r) => r.p50)].sort((a, b) => a - b)
+    const mid = medians.length % 2
+      ? medians[(medians.length - 1) / 2]
+      : (medians[medians.length / 2 - 1] + medians[medians.length / 2]) / 2
     return {
       value: mid,
       lo: Math.min(...rows.map((r) => r.p05)),
       hi: Math.max(...rows.map((r) => r.p95)),
-      caption: `선택 조건 ${rows.length}개 조합 · 조건별 평균값들의 중앙값 기준`,
+      caption: `선택 조건 ${rows.length}개 조합 · 조건별 중앙값(p50)들의 중앙값 기준`,
     }
   }, [rows])
 
