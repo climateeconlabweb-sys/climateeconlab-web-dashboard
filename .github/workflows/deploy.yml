@@ -1,0 +1,68 @@
+name: Build and deploy to GitHub Pages
+
+# 구글 시트(비공개)를 읽어 데이터를 굽고 정적 사이트를 GitHub Pages에 올린다.
+# 서비스 계정 키는 Secrets에만 있고 산출물(out/)에는 들어가지 않는다.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/15 * * * *'   # 15분마다 시트 변경 반영 (실제 실행은 더 늦어질 수 있음)
+  workflow_dispatch:          # Actions 탭에서 수동 실행
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 한 번에 하나만. 진행 중인 건 끝내고 대기 중인 건 최신 것만 남긴다.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: 구글 시트에서 데이터 생성
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        run: npm run convert
+
+      - run: npm test
+
+      - name: 정적 사이트 빌드
+        env:
+          NEXT_PUBLIC_BASE_PATH: /climateeconlab-web-dashboard
+        run: npm run build:pages
+
+      - name: 산출물에 비밀값이 섞이지 않았는지 확인
+        run: |
+          if grep -rlE "BEGIN (RSA )?PRIVATE KEY|iam\.gserviceaccount\.com" out/; then
+            echo "::error::빌드 산출물에 서비스 계정 키가 포함되어 있습니다. 배포를 중단합니다."
+            exit 1
+          fi
+          echo "확인 완료 — 산출물에 키 없음"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

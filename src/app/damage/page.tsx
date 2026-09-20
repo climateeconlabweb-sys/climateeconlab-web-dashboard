@@ -1,20 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import TopNav from '@/components/TopNav'
 import FilterBar from '@/components/FilterBar'
-import type { FxInfo } from '@/components/SccStatCard'
 import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
-import type { DamageRow } from '@/lib/types'
-import dataset from '@/data/dataset.json'
+import { DATA } from '@/lib/dataset'
 import {
   ModelMedianLines, ModelSmallMultiples, YearConditionHeatmap, EndpointSlope, SparklineTable,
 } from '@/components/analysis-charts'
-
-const data = dataset as unknown as {
-  globalDamage: DamageRow[]
-  korDamage: DamageRow[]
-}
 
 function Section({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
@@ -28,15 +21,9 @@ function Section({ title, note, children }: { title: string; note: string; child
 
 /** 피해비용 분석 페이지 — 필터에 반응하는 다각도 시각화 */
 export default function DamagePage() {
+  const data = DATA
   const [filter, setFilter] = useState(DEFAULT_FILTER)
-  const [fx, setFx] = useState<FxInfo>({ rate: 1450, asOf: null, isFallback: true })
-
-  useEffect(() => {
-    fetch('/api/fx')
-      .then((r) => r.json())
-      .then((j) => { if (typeof j?.rate === 'number' && j.rate > 0) setFx(j) })
-      .catch(() => {}) // 실패 시 고정값 1,450원 유지
-  }, [])
+  const fx = data.fx   // 환율은 빌드 시점에 받아 데이터에 구워둔다 (정적 사이트라 실시간 조회 불가)
 
   const rows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
   const usd = filter.currency === 'USD'

@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import TopNav from '@/components/TopNav'
 import FilterBar from '@/components/FilterBar'
-import SccStatCard, { type FxInfo } from '@/components/SccStatCard'
+import SccStatCard from '@/components/SccStatCard'
 import BoxPlotChart from '@/components/BoxPlotChart'
 import FanChart from '@/components/FanChart'
 import ChoroplethMap from '@/components/ChoroplethMap'
@@ -14,28 +14,14 @@ import DownloadMenu from '@/components/DownloadMenu'
 import { excelFileName } from '@/lib/download'
 import { UNIT_CONFIG } from '@/data/config'
 import { DEFAULT_FILTER, comboCount, matchRows } from '@/lib/filter'
-import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
-import dataset from '@/data/dataset.json'
-
-const data = dataset as unknown as {
-  globalScc: SccRow[]
-  korScc: SccRow[]
-  globalDamage: DamageRow[]
-  korDamage: DamageRow[]
-  regional: RegionalRow[]
-}
+import { YearConditionHeatmap } from '@/components/analysis-charts'
+import { DATA } from '@/lib/dataset'
 
 export default function Page() {
+  const data = DATA
   const [filter, setFilter] = useState(DEFAULT_FILTER)
   const [startYear, setStartYear] = useState(2025)
-  const [fx, setFx] = useState<FxInfo>({ rate: 1450, asOf: null, isFallback: true })
-
-  useEffect(() => {
-    fetch('/api/fx')
-      .then((r) => r.json())
-      .then((j) => { if (typeof j?.rate === 'number' && j.rate > 0) setFx(j) })
-      .catch(() => {}) // 실패 시 고정값 1,450원 유지
-  }, [])
+  const fx = data.fx   // 환율은 빌드 시점에 받아 데이터에 구워둔다 (정적 사이트라 실시간 조회 불가)
 
   const sccRows = matchRows(filter.region === 'KOR' ? data.korScc : data.globalScc, filter)
   const damageRows = matchRows(filter.region === 'KOR' ? data.korDamage : data.globalDamage, filter)
@@ -103,6 +89,21 @@ export default function Page() {
             <RegionTable regional={regionalDisplay} />
           </div>
         </div>
+      </section>
+
+      <section className="section" id="heatmap">
+        <div className="section-head">
+          <div>
+            <h2>연도×조건 히트맵</h2>
+            <p className="section-note">조건·연도별 평균 ({damageUnit}) · 색이 진할수록 큰 값 · 칸에 마우스를 올리면 값 표시</p>
+          </div>
+          <DownloadMenu svgId="heatmap-chart" imageName="연도x조건_히트맵" excelRows={damageRows} excelName={excelFileName('Heatmap', filter)} />
+        </div>
+        {damageDisplay.length === 0 ? (
+          <div className="empty-state">해당 조건의 데이터가 없습니다</div>
+        ) : (
+          <YearConditionHeatmap rows={damageDisplay} unitLabel={damageUnit} svgId="heatmap-chart" />
+        )}
       </section>
     </main>
   )

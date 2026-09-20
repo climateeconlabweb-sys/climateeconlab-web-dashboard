@@ -1,4 +1,4 @@
-import { MODELS, ECS_VALUES, DR_VALUES, type SccRow, type DamageRow, type Model, type Ecs, type Dr } from './types'
+import { MODELS, ECS_VALUES, DR_VALUES, YEARS, type SccRow, type DamageRow, type RegionalRow, type Dataset, type Model, type Ecs, type Dr } from './types'
 
 function findHeader(sheet: unknown[][], key: string): { headerIdx: number; cols: Record<string, number> } {
   for (let i = 0; i < sheet.length; i++) {
@@ -56,4 +56,31 @@ export function normalizeDamageRows(sheet: unknown[][]): DamageRow[] {
     } as DamageRow)
   }
   return out
+}
+
+/** Regional 시트: 1행 헤더(SIG_CD, SIDO_NM, SIGUNGU_NM, …, 값 컬럼) */
+export function normalizeRegionalRows(sheet: unknown[][]): RegionalRow[] {
+  const header = (sheet[0] ?? []).map((c) => String(c ?? '').trim())
+  const vi = header.findIndex((h) => /^(value|test_var1)$/i.test(h))  // 확정 데이터의 값 컬럼명이 정해지면 여기 갱신
+  if (vi < 0) throw new Error(`Regional: 값 컬럼(value/test_var1)을 찾을 수 없습니다 (헤더: ${header.join(', ')})`)
+  return sheet.slice(1)
+    .filter((r) => r?.[0] != null)
+    .map((r) => ({
+      sigCd: String(r[0]), sidoNm: String(r[1]), sigunguNm: String(r[2]),
+      value: typeof r[vi] === 'number' ? (r[vi] as number) : null,
+    }))
+}
+
+/** 시트 교체·수정으로 데이터가 깨졌는지 확인 — 문제 없으면 빈 배열 */
+export function validateDataset(d: Dataset): string[] {
+  const errors: string[] = []
+  const check = (cond: boolean, msg: string) => { if (!cond) errors.push(msg) }
+  for (const [name, rows] of [['Global_SCC', d.globalScc], ['KOR_SCC', d.korScc]] as const)
+    check(rows.length === 36, `${name}: 36조합이 아님 (${rows.length})`)
+  for (const [name, rows] of [['Global_Damage', d.globalDamage], ['KOR_Damage', d.korDamage]] as const) {
+    check(rows.length === 36 * YEARS.length, `${name}: ${36 * YEARS.length}행이 아님 (${rows.length})`)
+    check(new Set(rows.map((r) => r.year)).size === YEARS.length, `${name}: 연도 수 불일치`)
+  }
+  check(d.regional.length >= 220, `Regional: 지역 수 이상 (${d.regional.length})`)
+  return errors
 }

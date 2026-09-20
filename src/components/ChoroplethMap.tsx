@@ -3,16 +3,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { geoMercator, geoPath } from 'd3-geo'
 import { zoom as d3zoom, zoomIdentity, type ZoomBehavior, type D3ZoomEvent } from 'd3-zoom'
 import { select } from 'd3-selection'
-import { feature, mesh } from 'topojson-client'
-import type { Topology, GeometryCollection } from 'topojson-specification'
+import { feature, mesh, merge } from 'topojson-client'
+import type { Topology, GeometryCollection, Polygon, MultiPolygon } from 'topojson-specification'
 import type { Feature, Geometry } from 'geojson'
 import { niceThresholds, binIndex, rankDesc } from '@/lib/stats'
 import { fmtFull } from '@/lib/format'
+import { asset } from '@/lib/base-path'
 import type { RegionalRow } from '@/lib/types'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
 
 const W = 640
 const H = 720
+const MINI_W = 120 // 시도 미니맵 viewBox (본 지도와 같은 8:9 비율)
+const MINI_H = 135
 const SIGUNGU_LABEL_ZOOM = 3 // 이 배율 이상에서 시군구 이름 표시
 
 type RegionFeature = Feature<Geometry, { code: string; name: string }>
@@ -30,13 +33,14 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
+  const [selectedSido, setSelectedSido] = useState<string | null>(null) // 시도 코드 앞 2자리
   const [t, setT] = useState({ k: 1, x: 0, y: 0 })
   const [animated, setAnimated] = useState(true)
   const svgRef = useRef<SVGSVGElement>(null)
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
 
   useEffect(() => {
-    fetch('/geo/sigungu.topo.json')
+    fetch(asset('/geo/sigungu.topo.json'))
       .then((r) => r.json())
       .then((topo: Topology) => {
         const objName = Object.keys(topo.objects)[0]
@@ -68,11 +72,12 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
   const fills = useMemo(
     () =>
       (features ?? []).map((f) => {
+        if (selectedSido && !f.properties.code.startsWith(selectedSido)) return 'var(--surface)' // 선택 시도 외 지역은 회색 처리
         const row = byCode.get(f.properties.code)
         if (!row || row.value === null) return 'url(#hatch-nodata)'
         return `var(--map-${binIndex(row.value, thresholds) + 1})`
       }),
-    [features, byCode, thresholds],
+    [features, byCode, thresholds, selectedSido],
   )
 
   // 시도 경계선 — 시도 코드(앞 2자리)가 다른 시군구 사이의 경계만 추출
@@ -96,10 +101,14 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
   // 시도 이름 라벨 — 면적 가중 평균 중심점, 이름은 데이터의 sidoNm
   // 경기(31)는 서울을 둘러싼 모양이라 중심점이 서울 라벨과 겹침 → 남동쪽으로, 세종(29)은 충남과 붙음 → 위로 보정
   const LABEL_OFFSET: Record<string, [number, number]> = useMemo(() => ({ '31': [26, 34], '29': [8, -14] }), [])
+  const sidoNmByPrefix = useMemo(() => {
+    const m = new Map<string, string>()
+    regional.forEach((r) => { if (!m.has(r.sigCd.slice(0, 2))) m.set(r.sigCd.slice(0, 2), r.sidoNm) })
+    return m
+  }, [regional])
+
   const sidoLabels = useMemo(() => {
     if (!features || centroids.length === 0) return []
-    const sidoNmByPrefix = new Map<string, string>()
-    regional.forEach((r) => { if (!sidoNmByPrefix.has(r.sigCd.slice(0, 2))) sidoNmByPrefix.set(r.sigCd.slice(0, 2), r.sidoNm) })
     const acc = new Map<string, { x: number; y: number; a: number }>()
     features.forEach((f, i) => {
       const p = f.properties.code.slice(0, 2)
@@ -113,7 +122,21 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
         const [ox, oy] = LABEL_OFFSET[p] ?? [0, 0]
         return { name: sidoNmByPrefix.get(p)!, x: v.x / v.a + ox, y: v.y / v.a + oy }
       })
-  }, [features, centroids, regional, LABEL_OFFSET])
+  }, [features, centroids, sidoNmByPrefix, LABEL_OFFSET])
+
+  // 시도 미니맵 — 시군구를 시도 코드(앞 2자리)별로 병합한 폴리곤
+  const miniSido = useMemo(() => {
+    if (!topoData || !features || features.length === 0) return []
+    const objName = Object.keys(topoData.topo.objects)[0]
+    const geoms = (topoData.topo.objects[objName] as SigunguCollection).geometries as (Polygon<{ code: string; name: string }> | MultiPolygon<{ code: string; name: string }>)[]
+    const miniPath = geoPath(geoMercator().fitSize([MINI_W, MINI_H], { type: 'FeatureCollection', features }))
+    const prefixes = [...new Set(geoms.map((g) => g.properties!.code.slice(0, 2)))].sort()
+    return prefixes.map((p) => ({
+      p,
+      name: sidoNmByPrefix.get(p) ?? p,
+      d: miniPath(merge(topoData.topo, geoms.filter((g) => g.properties!.code.slice(0, 2) === p))) ?? '',
+    }))
+  }, [topoData, features, sidoNmByPrefix])
 
   // 시군구 이름 라벨 후보 — 코드당 가장 큰 조각의 중심점
   const sigunguLabelPoints = useMemo(() => {
@@ -154,21 +177,39 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
     return () => { select(svg).on('.zoom', null) }
   }, [features])
 
+  // 주어진 영역들의 경계 박스로 확대
+  const zoomToFeatures = useMemo(() => {
+    if (!path) return null
+    return (fs: RegionFeature[]) => {
+      const svg = svgRef.current
+      const zb = zoomRef.current
+      if (!svg || !zb || !fs.length) return
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+      fs.forEach((f) => {
+        const [[a, b], [c, d]] = path.bounds(f)
+        x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d)
+      })
+      const k = Math.min(6, 0.7 / Math.max((x1 - x0) / W, (y1 - y0) / H))
+      select(svg).call(zb.transform, zoomIdentity.translate(W / 2 - (k * (x0 + x1)) / 2, H / 2 - (k * (y0 + y1)) / 2).scale(k))
+    }
+  }, [path])
+
+  // 미니맵에서 시도 선택 시 해당 시도로 확대, 해제 시 전국 보기
+  useEffect(() => {
+    if (!features || !zoomToFeatures) return
+    if (!selectedSido) {
+      const svg = svgRef.current
+      if (svg && zoomRef.current) select(svg).call(zoomRef.current.transform, zoomIdentity)
+      return
+    }
+    zoomToFeatures(features.filter((f) => f.properties.code.startsWith(selectedSido)))
+  }, [selectedSido, features, zoomToFeatures])
+
   // 시군구 클릭 시 해당 영역으로 확대 (M-4)
   useEffect(() => {
-    const svg = svgRef.current
-    const zb = zoomRef.current
-    if (!svg || !zb || !features || !path || !selected) return
-    const sel = features.filter((f) => f.properties.code === selected)
-    if (!sel.length) return
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
-    sel.forEach((f) => {
-      const [[a, b], [c, d]] = path.bounds(f)
-      x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d)
-    })
-    const k = Math.min(6, 0.7 / Math.max((x1 - x0) / W, (y1 - y0) / H))
-    select(svg).call(zb.transform, zoomIdentity.translate(W / 2 - (k * (x0 + x1)) / 2, H / 2 - (k * (y0 + y1)) / 2).scale(k))
-  }, [selected, features, path])
+    if (!features || !zoomToFeatures || !selected) return
+    zoomToFeatures(features.filter((f) => f.properties.code === selected))
+  }, [selected, features, zoomToFeatures])
 
   const applyScale = (factor: number) => {
     const svg = svgRef.current
@@ -176,6 +217,7 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
   }
   const resetView = () => {
     setSelected(null)
+    setSelectedSido(null)
     const svg = svgRef.current
     if (svg && zoomRef.current) select(svg).call(zoomRef.current.transform, zoomIdentity)
   }
@@ -195,7 +237,12 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
             strokeWidth={0.5}
             vectorEffect="non-scaling-stroke"
             style={{ cursor: 'pointer' }}
-            onClick={(e) => { e.stopPropagation(); setSelected((s) => (s === code ? null : code)) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              // 선택 시도 밖(회색) 지역을 클릭하면 그 시도로 필터 전환
+              if (selectedSido && !code.startsWith(selectedSido)) { setSelectedSido(code.slice(0, 2)); setSelected(null); return }
+              setSelected((s) => (s === code ? null : code))
+            }}
             onMouseEnter={() => setHovered(code)}
             onMouseMove={(e) => {
               const name = row ? `${row.sidoNm} ${row.sigunguNm}` : f.properties.name
@@ -214,7 +261,7 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
           />
         )
       }),
-    [features, ds, fills, byCode, rankByCode, valued.length, unitLabel],
+    [features, ds, fills, byCode, rankByCode, valued.length, unitLabel, selectedSido],
   )
 
   if (topoData === undefined) return <div className="empty-state">지도를 불러오는 중…</div>
@@ -309,15 +356,42 @@ export default function ChoroplethMap({ regional, unitLabel, svgId = 'regional-m
             })}
         </svg>
 
-        {/* 확대·축소·전국 보기 버튼 */}
-        <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <button type="button" className="filter-btn" aria-label="확대" style={{ width: 32, padding: '5px 0' }} onClick={() => applyScale(1.6)}>＋</button>
-          <button type="button" className="filter-btn" aria-label="축소" style={{ width: 32, padding: '5px 0' }} onClick={() => applyScale(1 / 1.6)}>－</button>
-          <button type="button" className="filter-btn" aria-label="전국 보기" style={{ width: 32, padding: '5px 0', fontSize: 11 }} onClick={resetView}>전국</button>
+        {/* 시도 미니맵 + 확대·축소·전국 보기 버튼 */}
+        <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          {miniSido.length > 0 && (
+            <svg
+              className="map-mini"
+              viewBox={`0 0 ${MINI_W} ${MINI_H}`}
+              role="group"
+              aria-label="시도 선택 미니맵"
+              style={{ display: 'block', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}
+            >
+              {miniSido.map((s) => (
+                <path
+                  key={s.p}
+                  d={s.d}
+                  fill={selectedSido === s.p ? 'var(--accent)' : 'var(--surface)'}
+                  stroke="var(--ink-muted)"
+                  strokeWidth={0.5}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  aria-label={s.name}
+                  onClick={() => { setSelected(null); setSelectedSido((p) => (p === s.p ? null : s.p)) }}
+                >
+                  <title>{s.name}</title>
+                </path>
+              ))}
+            </svg>
+          )}
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button type="button" className="filter-btn" aria-label="확대" style={{ width: 32, padding: '5px 0' }} onClick={() => applyScale(1.6)}>＋</button>
+            <button type="button" className="filter-btn" aria-label="축소" style={{ width: 32, padding: '5px 0' }} onClick={() => applyScale(1 / 1.6)}>－</button>
+            <button type="button" className="filter-btn" aria-label="전국 보기" style={{ width: 32, padding: '5px 0', fontSize: 11 }} onClick={resetView}>전국</button>
+          </div>
         </div>
       </div>
       <p style={{ fontSize: 11.5, color: 'var(--ink-muted)', margin: '6px 0 0' }}>
-        드래그로 이동 · 핀치 또는 ＋/－ 버튼으로 확대 · 시군구를 클릭하면 해당 지역으로 확대됩니다
+        드래그로 이동 · 핀치 또는 ＋/－ 버튼으로 확대 · 시군구를 클릭하면 해당 지역으로 확대됩니다 · 우상단 미니맵에서 시도를 선택하면 해당 시도만 표시됩니다
       </p>
 
       {/* 선택 시 상세 카드 (M-5) */}

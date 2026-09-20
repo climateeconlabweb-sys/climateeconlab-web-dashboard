@@ -33,9 +33,21 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# 구글 서비스 계정 키 — 절대 커밋 금지 (유출 시 시트 접근 권한이 통째로 넘어간다).
+# 파일 이름에 기대지 않는다: 저장소 루트의 .json은 아래 3개 말고 전부 무시한다.
+# (키 파일 이름은 <프로젝트>-<해시>.json 형식이라 오타·프로젝트명 변경에 쉽게 새어나간다)
+/secrets/
+/*.json
+!/package.json
+!/package-lock.json
+!/tsconfig.json
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build:pages 실행 중 서버 전용 라우트를 잠시 옮겨두는 자리
+/.pages-build-stash/

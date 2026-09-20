@@ -4,15 +4,7 @@ import TopNav from '@/components/TopNav'
 import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
 import { UNIT_CONFIG } from '@/data/config'
 import { fmtFull } from '@/lib/format'
-import dataset from '@/data/dataset.json'
-
-const data = dataset as unknown as {
-  globalScc: SccRow[]
-  korScc: SccRow[]
-  globalDamage: DamageRow[]
-  korDamage: DamageRow[]
-  regional: RegionalRow[]
-}
+import { DATA } from '@/lib/dataset'
 
 const TABS = [
   { key: 'globalScc', label: '전 세계 SCC' },
@@ -106,6 +98,7 @@ function RegionalTable({ rows }: { rows: RegionalRow[] }) {
 
 /** 샘플 데이터 페이지 — 수령한 원자료 5종을 표로 열람 */
 export default function DataPage() {
+  const data = DATA
   const [tab, setTab] = useState<TabKey>('globalScc')
   const rows = data[tab]
   const unit = tab.endsWith('Scc') ? UNIT_CONFIG.scc.label : UNIT_CONFIG.damage.label

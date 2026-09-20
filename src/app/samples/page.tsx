@@ -1,20 +1,13 @@
 'use client'
 import TopNav from '@/components/TopNav'
-import type { SccRow, DamageRow, RegionalRow } from '@/lib/types'
 import { UNIT_CONFIG } from '@/data/config'
-import dataset from '@/data/dataset.json'
+import { DATA } from '@/lib/dataset'
 import {
   DumbbellChart, ErrorBarChart, SccHeatmap, SlopeSensitivity,
   DotPlot, MedianBars, ModelCards,
   ModelMedianLines, ModelSmallMultiples, YearConditionHeatmap, EndpointSlope, SparklineTable,
   TopRegionsBar,
 } from '@/components/analysis-charts'
-
-const data = dataset as unknown as {
-  korScc: SccRow[]
-  korDamage: DamageRow[]
-  regional: RegionalRow[]
-}
 
 function Badge({ kind }: { kind: 'full' | 'median' | 'partial' }) {
   const text = kind === 'full' ? '요약통계 전체 사용' : kind === 'median' ? '중앙값만 사용' : '일부 값만 사용'
@@ -50,6 +43,7 @@ function Sample({ no, title, dataUsed, badge, children }: {
 
 /** 시각화 후보 샘플 페이지 — 고객사가 보고 채택 여부를 결정하기 위한 비교용 */
 export default function SamplesPage() {
+  const data = DATA
   const scc = data.korScc
   const damage = data.korDamage
   const regional = data.regional

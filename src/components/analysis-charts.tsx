@@ -343,7 +343,7 @@ export function ModelSmallMultiples({ rows }: { rows: DamageRow[] }) {
 }
 
 /* ── 10. 연도×조건 히트맵: 색 = 평균 — Y축은 모형│민감도│할인율 3단, 좁은 화면은 가로 스크롤 ── */
-export function YearConditionHeatmap({ rows, unitLabel = '' }: { rows: DamageRow[]; unitLabel?: string }) {
+export function YearConditionHeatmap({ rows, unitLabel = '', svgId }: { rows: DamageRow[]; unitLabel?: string; svgId?: string }) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const combos = [...new Map(rows.map((r) => [comboLabel(r), r])).values()].sort(modelOrder)
   const thresholds = quantileThresholds(rows.map((r) => r.mean), 7)
@@ -365,6 +365,7 @@ export function YearConditionHeatmap({ rows, unitLabel = '' }: { rows: DamageRow
   return (
     <div style={{ overflowX: 'auto' }}>
       <svg
+        id={svgId}
         viewBox={`0 0 ${W} ${H}`}
         style={{ minWidth: 680, width: '100%', height: 'auto', display: 'block' }}
         onMouseLeave={() => setTooltip(null)}

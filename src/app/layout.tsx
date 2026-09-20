@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import HeightReporter from '@/components/HeightReporter'
-import VisitLogger from '@/components/VisitLogger'
 import '@/styles/theme.css'
 
 export const metadata: Metadata = {
@@ -13,7 +12,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ko">
       <body>
         <HeightReporter />
-        <VisitLogger />
         {children}
       </body>
     </html>

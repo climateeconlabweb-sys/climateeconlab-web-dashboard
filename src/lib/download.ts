@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx'
 import type { FilterState } from './filter'
 
 /** 파일명 규칙 (§5.2) — 현재 필터 조건을 파일명에 표기 */
-export function excelFileName(kind: 'SCC' | 'Damage' | 'Regional', f: FilterState): string {
+export function excelFileName(kind: 'SCC' | 'Damage' | 'Regional' | 'Heatmap', f: FilterState): string {
   if (kind === 'Regional') return 'Regional_피해비용.xlsx'
   const cond = f.model === 'ALL' && f.ecs === 'ALL' && f.dr === 'ALL'
     ? '전체'

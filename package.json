@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "convert": "tsx scripts/convert-data.ts"
+    "convert": "tsx --env-file-if-exists=.env.local scripts/convert-data.ts",
+    "check:sheets": "tsx --env-file-if-exists=.env.local scripts/check-sheets.ts",
+    "build:pages": "bash scripts/build-pages.sh"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.29.2",
