@@ -24,6 +24,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 아래 커밋 신원 검사에 전체 이력이 필요하다
+
+      # 공개 저장소이므로 개인 이메일이 커밋에 섞여 들어오면 그대로 공개된다.
+      # 로컬 git 설정은 clone마다 달라질 수 있어 여기서 한 번 더 막는다.
+      - name: 커밋 신원 검사 (개인 이메일 차단)
+        run: |
+          BAD=$(git log --format='%ae%n%ce' | sort -u | grep -vE '@users\.noreply\.github\.com$|^$' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::개인 이메일이 포함된 커밋이 있습니다. noreply 주소로 바꿔주세요:"
+            echo "$BAD"
+            exit 1
+          fi
+          echo "확인 완료 — 모든 커밋이 noreply 주소"
 
       - uses: actions/setup-node@v4
         with:

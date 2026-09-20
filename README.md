@@ -92,6 +92,27 @@ npm run build:pages  # GitHub Pages와 동일한 정적 산출물을 out/ 에 �
 `/admin`(원고 편집)은 로컬 전용이다. 원고를 고치면 `content/model-page.json`이 바뀌므로
 **커밋·푸시해야 운영에 반영**된다.
 
+### 커밋 신원
+
+공개 저장소이므로 커밋에 개인 이메일이 들어가면 그대로 공개된다.
+이 저장소의 커밋은 `climateeconlabweb-sys <…@users.noreply.github.com>` 로 통일한다.
+
+- 배포 워크플로가 **noreply 주소가 아닌 커밋이 있으면 빌드를 중단**한다.
+- 새 컴퓨터에서 작업한다면 clone 후 한 번 설정하거나(아래), 전역 `~/.gitconfig`에
+  원격 주소 기준 조건부 설정을 넣어두면 clone할 때마다 자동 적용된다.
+
+```bash
+# 이 저장소에만 적용
+git config user.name  "climateeconlabweb-sys"
+git config user.email "329795782+climateeconlabweb-sys@users.noreply.github.com"
+```
+
+```gitconfig
+# ~/.gitconfig — 이 계정의 저장소를 clone하면 자동 적용 (git 2.36+)
+[includeIf "hasconfig:remote.*.url:https://github.com/climateeconlabweb-sys/**"]
+	path = ~/.gitconfig-climateeconlab
+```
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
