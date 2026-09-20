@@ -4,8 +4,7 @@ import { scaleBand, scaleLinear, scalePoint } from 'd3-scale'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
 import { line, area, curveMonotoneX } from 'd3-shape'
 import { MODELS, ECS_VALUES, DR_VALUES, YEARS, type SccRow, type DamageRow, type RegionalRow, type Model } from '@/lib/types'
-import { summarizeByYear } from '@/lib/stats'
-import { quantileThresholds, binIndex } from '@/lib/stats'
+import { summarizeByYear, quantileThresholds, binIndex, statExtent } from '@/lib/stats'
 import { fmtCompact, fmtFull } from '@/lib/format'
 
 export const MODEL_COLOR: Record<Model, string> = {
@@ -34,7 +33,7 @@ export function DumbbellChart({ rows }: { rows: SccRow[] }) {
   const RH = 15, ML = 150, MR = 24, MT = 6, MB = 30
   const H = MT + MB + sorted.length * RH
   const x = scaleLinear()
-    .domain([Math.min(...rows.map((r) => r.p05)), Math.max(...rows.map((r) => r.p95))])
+    .domain(statExtent(rows))
     .nice()
     .range([ML, W - MR])
   return (
@@ -66,9 +65,7 @@ export function ErrorBarChart({ rows }: { rows: SccRow[] }) {
   const H = 340, ML = 56, MR = 12, MT = 10, MB = 40
   const keys = sorted.map(comboLabel)
   const x = scaleBand<string>().domain(keys).range([ML, W - MR]).paddingInner(0.35)
-  const lo = Math.min(0, ...sorted.map((r) => r.p05))
-  const hi = Math.max(...sorted.map((r) => r.p95))
-  const y = scaleLinear().domain([lo, hi]).nice().range([H - MB, MT])
+  const y = scaleLinear().domain(statExtent(sorted, true)).nice().range([H - MB, MT])
   const bw = x.bandwidth()
   const groups = MODELS.filter((m) => sorted.some((r) => r.model === m)).map((m) => {
     const xs = sorted.filter((r) => r.model === m).map((r) => x(comboLabel(r))! + bw / 2)
@@ -152,7 +149,9 @@ export function SccHeatmap({ rows }: { rows: SccRow[] }) {
 /* ── 4. 민감도 기울기 차트: 기후민감도에 따른 평균 변화, 할인율별 패널 ─ */
 export function SlopeSensitivity({ rows }: { rows: SccRow[] }) {
   const FW = 280, H = 260, ML = 48, MT = 30, MB = 34
-  const y = scaleLinear().domain([0, Math.max(...rows.map((r) => r.mean))]).nice().range([H - MB, MT])
+  // 평균만 그리는 차트 — 평균이 전부 음수여도 축이 뒤집히지 않도록 0을 함께 포함한다
+  const means = rows.map((r) => r.mean)
+  const y = scaleLinear().domain([Math.min(0, ...means), Math.max(0, ...means)]).nice().range([H - MB, MT])
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {DR_VALUES.map((d) => {

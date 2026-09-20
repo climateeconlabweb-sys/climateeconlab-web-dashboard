@@ -4,6 +4,7 @@ import { scaleBand, scaleLinear } from 'd3-scale'
 import { MODELS, type SccRow, type Model } from '@/lib/types'
 import { fmtCompact, fmtFull } from '@/lib/format'
 import ChartTooltip, { type TooltipState } from './ChartTooltip'
+import { statExtent } from '@/lib/stats'
 
 const MODEL_COLOR: Record<Model, string> = {
   FUND: 'var(--model-fund)',
@@ -46,9 +47,7 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
   const keys = sorted.map(rowKey)
 
   const x = scaleBand<string>().domain(keys).range([0, innerW]).paddingInner(0.35).paddingOuter(0.2)
-  const lo = Math.min(...sorted.map((r) => r.p05))
-  const hi = Math.max(...sorted.map((r) => Math.max(r.p95, r.mean)))
-  const y = scaleLinear().domain([lo, hi]).nice().range([innerH, 0])
+  const y = scaleLinear().domain(statExtent(sorted)).nice().range([innerH, 0])
   const ticks = y.ticks(6)
 
   // 모형 그룹 라벨 위치 (S-2)
@@ -76,7 +75,7 @@ export default function BoxPlotChart({ rows, unitLabel, svgId = 'scc-chart' }: P
               </g>
             ))}
             {/* 0 기준선 */}
-            {lo < 0 && <line x1={0} x2={innerW} y1={y(0)} y2={y(0)} stroke="var(--ink-muted)" strokeWidth={1} />}
+            {y.domain()[0] < 0 && <line x1={0} x2={innerW} y1={y(0)} y2={y(0)} stroke="var(--ink-muted)" strokeWidth={1} />}
             {/* Y축 단위 — 눈금 숫자와 겹치지 않도록 여백 위에 배치 */}
             <text x={-MARGIN.left + 6} y={-14} fontSize={11} fill="var(--ink-secondary)">{unitLabel}</text>
 

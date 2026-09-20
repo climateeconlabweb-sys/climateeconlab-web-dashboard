@@ -16,6 +16,22 @@ export function summarizeByYear(rows: Pick<DamageRow, 'year' | 'mean' | 'p05' | 
   }))
 }
 
+/**
+ * 차트 세로축 범위 — 실제로 그리는 값(p05·p95·평균)을 모두 포함해야 한다.
+ * 백분위수만으로 범위를 잡으면 평균이 p05보다 작거나 p95보다 큰 데이터에서
+ * 평균 마커가 축 밖으로 잘려 범례에만 있고 화면에는 안 보이게 된다.
+ * includeZero: 0을 기준선으로 쓰는 차트(막대 등)에서 0을 범위에 포함시킨다.
+ */
+export function statExtent(
+  rows: readonly { p05: number; p95: number; mean: number }[],
+  includeZero = false,
+): [number, number] {
+  const values = rows.flatMap((r) => [r.p05, r.p95, r.mean])
+  if (includeZero) values.push(0)
+  if (values.length === 0) return [0, 1]
+  return [Math.min(...values), Math.max(...values)]
+}
+
 export function quantileThresholds(values: number[], bins = 7): number[] {
   const sorted = [...values].sort((a, b) => a - b)
   return Array.from({ length: bins - 1 }, (_, i) => quantileSorted(sorted, (i + 1) / bins)!)
